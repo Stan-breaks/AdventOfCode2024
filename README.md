@@ -20,7 +20,7 @@ I'll update this section as I progress through the challenge.
 
 | Day | Part One | Part Two |
 | --- | :------: | :------: |
-| 1   |  :star:  |          |
+| 1   |  :star:  |  :star:  |
 | 2   |          |          |
 | 3   |          |          |
 | 4   |          |          |
