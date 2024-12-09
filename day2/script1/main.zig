@@ -30,7 +30,6 @@ pub fn main() !void {
                 break;
             }
         }
-
         var is_ascending = true;
         for (0..(numbers.items.len - 1)) |i| {
             if (@abs(numbers.items[i + 1] - numbers.items[i]) > 3 or numbers.items[i] >= numbers.items[i + 1]) {
