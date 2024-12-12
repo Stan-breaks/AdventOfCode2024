@@ -24,45 +24,47 @@ pub fn main() !void {
                 try numbers.append(num);
             } else |_| {}
         }
-        var is_asceding = true;
-        var ascend_count: i32 = 0;
-        var i: usize = 0;
-        while (i < numbers.items.len - 1) {
-            if (@abs(numbers.items[i + 1] - numbers.items[i]) > 3 or numbers.items[i] >= numbers.items[i + 1]) {
-                if (ascend_count == 0) {
-                    ascend_count = 1;
-                    _ = numbers.orderedRemove(i);
-                    if (i > 0) {
-                        i -= 1;
-                    }
-                } else {
-                    is_asceding = false;
-                    break;
-                }
-            }
-            i += 1;
+        if (is_sequence_safe(numbers.items)) {
+            safe += 1;
+            continue;
         }
-        var is_desceding = true;
-        var descend_count: i32 = 0;
-        var j: usize = 0;
-        while (j < numbers.items.len - 1) {
-            if (@abs(numbers.items[j] - numbers.items[j + 1]) > 3 or numbers.items[j + 1] >= numbers.items[j]) {
-                if (descend_count == 0) {
-                    descend_count = 1;
-                    _ = numbers.orderedRemove(j);
-                    if (j > 0) {
-                        j -= 1;
-                    }
-                } else {
-                    is_desceding = false;
-                    break;
-                }
+
+        var is_removable_safe = false;
+        for (0..numbers.items.len) |remove_index| {
+            var test_numbers = try numbers.clone();
+            defer test_numbers.deinit();
+            _ = test_numbers.orderedRemove(remove_index);
+            if (is_sequence_safe(test_numbers.items)) {
+                is_removable_safe = true;
+                break;
             }
-            j += 1;
         }
-        if (is_asceding or is_desceding) {
+        if (is_removable_safe) {
             safe += 1;
         }
     }
     try stdout.print("{any}\n", .{safe});
+}
+
+fn is_sequence_safe(numbers: []const i32) bool {
+    var is_descending = true;
+    for (0..(numbers.len - 1)) |i| {
+        if (@abs(numbers[i] - numbers[i + 1]) > 3 or numbers[i] <= numbers[i + 1]) {
+            is_descending = false;
+            break;
+        }
+    }
+    var is_ascending = true;
+    for (0..(numbers.len - 1)) |i| {
+        if (@abs(numbers[i + 1] - numbers[i]) > 3 or numbers[i] >= numbers[i + 1]) {
+            is_ascending = false;
+            break;
+        }
+    }
+
+    if (is_ascending or is_descending) {
+        return true;
+    } else {
+        return false;
+    }
 }
