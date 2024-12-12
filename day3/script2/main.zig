@@ -5,7 +5,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -17,11 +17,18 @@ pub fn main() !void {
     defer stringBuilder.deinit();
 
     var count: i32 = 0;
-    var totalSum: i64 = 0;
     var firstNum: i64 = 0;
     var secondNum: i64 = 0;
+    var totalSum: i64 = 0;
+
+    var doCount: i32 = 0;
 
     for (content) |char| {
+        if (char == 'd') {
+            stringBuilder.clearRetainingCapacity();
+            count = 1;
+            doCount = 0;
+        }
         if (char == 'm') {
             stringBuilder.clearRetainingCapacity();
             count = 1;
@@ -31,7 +38,12 @@ pub fn main() !void {
         if (count == 1) {
             try stringBuilder.append(char);
             if (char == ')') {
-                if (stringBuilder.items.len <= 12 and stringBuilder.items.len >= 8 and std.mem.startsWith(u8, stringBuilder.items, "mul(")) {
+                if (std.mem.startsWith(u8, stringBuilder.items, "don't()")) {
+                    doCount = 1;
+                    count = 0;
+                    stringBuilder.clearRetainingCapacity();
+                }
+                if (stringBuilder.items.len <= 12 and stringBuilder.items.len >= 8 and std.mem.startsWith(u8, stringBuilder.items, "mul(") and doCount != 1) {
                     if (std.mem.indexOf(u8, stringBuilder.items, ",")) |commaIndex| {
                         const first = stringBuilder.items[4..commaIndex];
                         const second = stringBuilder.items[commaIndex + 1 .. stringBuilder.items.len - 1];
