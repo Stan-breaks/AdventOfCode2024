@@ -12,19 +12,28 @@ pub fn main() !void {
     defer allocator.free(content);
 
     const stdout = std.io.getStdOut().writer();
-    var bigArr = std.ArrayList([]u8).init(allocator);
-    defer bigArr.deinit();
+    var arr = std.ArrayList([]u8).init(allocator);
+    defer {
+        for (arr.items) |line| {
+            allocator.free(line);
+        }
+        arr.deinit();
+    }
 
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
 
     while (lineTokenizer.next()) |line| {
-        var smallArr = std.ArrayList(u8).init(allocator);
-        defer smallArr.deinit();
-        for (line) |char| {
-            try smallArr.append(char);
-        }
-        try bigArr.append(smallArr.items);
+        const mutableLine = try allocator.alloc(u8, line.len);
+        @memcpy(mutableLine, line);
+        try arr.append(mutableLine);
     }
 
-    try stdout.print("{any}\n", .{bigArr.items});
+    var count:i64 = 0;
+    for (0..arr.items.len-1) |i| {
+        for (0..arr.items[i].len-1)|j|{
+            if(arr.items[i][j]=='S'){
+
+            }
+        }
+    }
 }
