@@ -28,12 +28,17 @@ pub fn main() !void {
         try arr.append(mutableLine);
     }
 
-    var count:i64 = 0;
-    for (0..arr.items.len-1) |i| {
-        for (0..arr.items[i].len-1)|j|{
-            if(arr.items[i][j]=='S'){
-
+    var count: i64 = 0;
+    for (0..arr.items.len) |i| {
+        for (0..arr.items[i].len) |j| {
+            if (std.mem.startsWith(u8, arr.items[i][j..], "SAMX") or std.mem.startsWith(u8, arr.items[i][j..], "XMAS")) {
+                count += 1;
+            }
+            if (std.mem.startsWith(u8, arr.items[j][i..], "SAMX") or std.mem.startsWith(u8, arr.items[j][i..], "XMAS")) {
+                count += 1;
             }
         }
     }
+
+    try stdout.print("Number of instances is {}\n", .{count});
 }
