@@ -5,7 +5,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -59,16 +59,20 @@ pub fn main() !void {
                         count += 1;
                     }
                 }
-                const signedI: i64 = @intCast(i);
-                if (signedI - 4 >= 0 and j + 4 <= arr.items[i].len) {
+                const signedJ: i64 = @intCast(j);
+                if (i + 4 <= arr.items.len and signedJ - 4 >= -1) {
                     var backwardDiagonal = std.ArrayList(u8).init(allocator);
                     defer backwardDiagonal.deinit();
                     var r = i;
                     var c = j;
-                    while (r > i - 4 and c < j + 4) {
+                    while (r < i + 4 and c > signedJ - 4) {
                         try backwardDiagonal.append(arr.items[r][c]);
-                        r -= 1;
-                        c += 1;
+                        r += 1;
+                        if (c == 0) {
+                            break;
+                        } else {
+                            c -= 1;
+                        }
                     }
                     if (std.mem.startsWith(u8, backwardDiagonal.items, "SAMX") or std.mem.startsWith(u8, backwardDiagonal.items, "XMAS")) {
                         count += 1;

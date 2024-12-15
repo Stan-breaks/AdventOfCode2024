@@ -1,4 +1,7 @@
-S..S
-A.A.
-MM..
-XMAS
+S..S..S
+.A.A.A.
+..MMM..
+SAMXMAS
+..MMM..
+.A.A.A.
+S..S..S
