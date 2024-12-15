@@ -35,7 +35,6 @@ pub fn main() !void {
                 if (std.mem.startsWith(u8, arr.items[i][j..], "SAMX") or std.mem.startsWith(u8, arr.items[i][j..], "XMAS")) {
                     count += 1;
                 }
-                const signedI: i64 = @intCast(i);
                 if (i + 4 <= arr.items.len) {
                     var verticalStr = std.ArrayList(u8).init(allocator);
                     defer verticalStr.deinit();
@@ -60,6 +59,7 @@ pub fn main() !void {
                         count += 1;
                     }
                 }
+                const signedI: i64 = @intCast(i);
                 if (signedI - 4 >= 0 and j + 4 <= arr.items[i].len) {
                     var backwardDiagonal = std.ArrayList(u8).init(allocator);
                     defer backwardDiagonal.deinit();
