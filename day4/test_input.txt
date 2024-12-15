@@ -1,7 +1,10 @@
-S..S..S
-.A.A.A.
-..MMM..
-SAMXMAS
-..MMM..
-.A.A.A.
-S..S..S
+.M.S......
+..A..MSMS.
+.M.S.MAA..
+..A.ASMSM.
+.M.S.M....
+..........
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.
+..........
