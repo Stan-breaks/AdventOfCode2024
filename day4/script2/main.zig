@@ -4,7 +4,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -44,12 +44,13 @@ pub fn main() !void {
                 var backDiagonal = std.ArrayList(u8).init(allocator);
                 defer backDiagonal.deinit();
 
-                var r = i;
-                var c = j;
+                for (0..3) |k| {
+                    try backDiagonal.append(arr.items[i + k - 1][j + 1 - k]);
+                }
 
-
-                try stdout.print("{s}\n", .{forwardDiagonal.items});
-                count += 1;
+                if ((std.mem.startsWith(u8, forwardDiagonal.items, "SAM") or std.mem.startsWith(u8, forwardDiagonal.items, "MAS")) and (std.mem.startsWith(u8, backDiagonal.items, "SAM") or std.mem.startsWith(u8, backDiagonal.items, "MAS"))) {
+                    count += 1;
+                }
             }
         }
     }
