@@ -23,7 +23,7 @@ I'll update this section as I progress through the challenge.
 | 1   |  :star:  |  :star:  |
 | 2   |  :star:  |  :star:  |
 | 3   |  :star:  |  :star:  |
-| 4   |          |          |
+| 4   |  :star:  |          |
 | 5   |          |          |
 | ... |          |          |
 | 25  |          |          |
