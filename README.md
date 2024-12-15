@@ -1,6 +1,6 @@
 # Advent of Code 2024 Solutions
 
-This repository contains my solutions for the [Advent of Code 2023](https://adventofcode.com/2023) challenge using zig.
+This repository contains my solutions for the [Advent of Code 2024](https://adventofcode.com/2024) challenge using zig.
 
 ## About Advent of Code
 
