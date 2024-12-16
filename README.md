@@ -24,6 +24,6 @@ I'll update this section as I progress through the challenge.
 | 2   |  :star:  |  :star:  |
 | 3   |  :star:  |  :star:  |
 | 4   |  :star:  |  :star:  |
-| 5   |  :star:  |          |
+| 5   |  :star:  |  :star:  |
 | ... |          |          |
 | 25  |          |          |
