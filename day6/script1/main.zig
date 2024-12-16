@@ -41,11 +41,15 @@ pub fn main() !void {
         lineIndex += 1;
     }
     var count: i32 = 0;
-    while (pointerIndex.i > 0 and pointerIndex.i < map.items.len and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len) {
+    while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1) {
         if (std.mem.eql(u8, pointerState.items, "up")) {
             if (map.items[pointerIndex.i - 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append("right");
+                try pointerState.append('r');
+                try pointerState.append('i');
+                try pointerState.append('g');
+                try pointerState.append('h');
+                try pointerState.append('t');
                 pointerIndex.j += 1;
             } else {
                 pointerIndex.i -= 1;
@@ -53,7 +57,10 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, pointerState.items, "right")) {
             if (map.items[pointerIndex.i][pointerIndex.j + 1] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append("down");
+                try pointerState.append('d');
+                try pointerState.append('o');
+                try pointerState.append('w');
+                try pointerState.append('n');
                 pointerIndex.i += 1;
             } else {
                 pointerIndex.j += 1;
@@ -61,7 +68,10 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, pointerState.items, "down")) {
             if (map.items[pointerIndex.i + 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append("left");
+                try pointerState.append('l');
+                try pointerState.append('e');
+                try pointerState.append('f');
+                try pointerState.append('t');
                 pointerIndex.j -= 1;
             } else {
                 pointerIndex.i += 1;
@@ -69,7 +79,8 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, pointerState.items, "left")) {
             if (map.items[pointerIndex.i][pointerIndex.j - 1] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append("up");
+                try pointerState.append('u');
+                try pointerState.append('p');
                 pointerIndex.i -= 1;
             } else {
                 pointerIndex.j -= 1;
@@ -79,4 +90,5 @@ pub fn main() !void {
     }
 
     try stdout.print("{d}\n", .{count});
+    try stdout.print("{any}\n", .{pointerIndex});
 }
