@@ -25,17 +25,14 @@ pub fn main() !void {
     }
 
     var firstLineTokenizer = std.mem.tokenize(u8, firstSection, "\n");
-    var rules = std.ArrayList([]u8).init(allocator);
-    defer {
-        for (rules.items) |line| {
-            allocator.free(line);
-        }
-        rules.deinit();
-    }
+    var rules = std.ArrayList(struct { first: i32, second: i32 }).init(allocator);
+    defer rules.deinit();
     while (firstLineTokenizer.next()) |line| {
-        const mutableLine = try allocator.alloc(u8, line.len);
-        @memcpy(mutableLine, line);
-        try rules.append(mutableLine);
+        if (std.mem.indexOf(u8, line, "|")) |separatorIndex| {
+            const firstRule = try std.fmt.parseInt(i32, line[0..separatorIndex], 10);
+            const secondRule = try std.fmt.parseInt(i32, line[separatorIndex + 1 ..], 10);
+            try rules.append(.{ .first = firstRule, .second = secondRule });
+        }
     }
 
     var secondLineTokenizer = std.mem.tokenize(u8, secondSection, "\n");
@@ -67,12 +64,8 @@ pub fn main() !void {
             const firstNum = list[i];
             const secondNum = list[i + 1];
             for (rules.items) |rule| {
-                if (std.mem.indexOf(u8, rule, "|")) |separatorIndex| {
-                    const firstRule = try std.fmt.parseInt(i32, rule[0..separatorIndex], 10);
-                    const SecondRule = try std.fmt.parseInt(i32, rule[separatorIndex + 1 ..], 10);
-                    if (firstNum == SecondRule and secondNum == firstRule) {
-                        isCorrect = false;
-                    }
+                if (firstNum == rule.second and secondNum == rule.first) {
+                    isCorrect = false;
                 }
             }
         }
