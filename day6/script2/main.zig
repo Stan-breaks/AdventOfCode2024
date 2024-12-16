@@ -42,7 +42,6 @@ pub fn main() !void {
     }
     var count: i32 = 0;
     while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1) {
-        map.items[pointerIndex.i][pointerIndex.j] = 'X';
         if (std.mem.eql(u8, pointerState.items, "up")) {
             if (map.items[pointerIndex.i - 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
@@ -54,6 +53,32 @@ pub fn main() !void {
                 pointerIndex.j += 1;
             } else {
                 pointerIndex.i -= 1;
+                var row = std.ArrayList(u8).init(allocator);
+                defer row.deinit();
+                for (pointerIndex.j..map.items[pointerIndex.i].len) |j| {
+                    try row.append(map.items[pointerIndex.i][j]);
+                }
+                var topRight: struct { i: usize, j: usize } = undefined;
+                if (std.mem.indexOf(u8, row, "#")) |obIndex| {
+                    topRight.i = pointerIndex.i;
+                    topRight.j = obIndex;
+                }
+                var col = std.ArrayList(u8).init(allocator);
+                defer col.deinit();
+                for (pointerIndex.i..map.items.len) |i| {
+                    try col.append(map.items[i][pointerIndex.j]);
+                }
+                var bottomLeft: struct { i: usize, j: usize } = undefined;
+                if (std.mem.indexOf(u8, col, "#")) |obIndex| {
+                    bottomLeft.i = obIndex;
+                    bottomLeft.j = pointerIndex.j;
+                }
+                if (topRight == undefined or bottomLeft == undefined) {
+                    continue;
+                }
+                if (map.items[bottomLeft.i][topRight.j]) {
+                    count += 1;
+                }
             }
         } else if (std.mem.eql(u8, pointerState.items, "right")) {
             if (map.items[pointerIndex.i][pointerIndex.j + 1] == '#') {
@@ -87,12 +112,6 @@ pub fn main() !void {
                 pointerIndex.j -= 1;
             }
         }
-
-        // if (std.mem.indexOf(u8,map.items[0..pointerIndex.i][pointerIndex.j],"#"){
-        //     count += 1;
-        // }
-        count += 1;
-        try stdout.print("{s}\n", .{map.items[0..pointerIndex.i][pointerIndex.j - 1]});
     }
     try stdout.print("{d}\n", .{count + 1});
 }
