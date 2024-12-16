@@ -42,6 +42,7 @@ pub fn main() !void {
     }
     var count: i32 = 0;
     while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1) {
+        map.items[pointerIndex.i][pointerIndex.j] = 'X';
         if (std.mem.eql(u8, pointerState.items, "up")) {
             if (map.items[pointerIndex.i - 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
@@ -86,7 +87,10 @@ pub fn main() !void {
                 pointerIndex.j -= 1;
             }
         }
-        count += 1;
+
+        if (map.items[pointerIndex.i][pointerIndex.j] != 'X') {
+            count += 1;
+        }
     }
-    try stdout.print("{d}\n", .{count});
+    try stdout.print("{d}\n", .{count + 1});
 }
