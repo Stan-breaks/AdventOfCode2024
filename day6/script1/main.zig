@@ -88,7 +88,5 @@ pub fn main() !void {
         }
         count += 1;
     }
-
     try stdout.print("{d}\n", .{count});
-    try stdout.print("{any}\n", .{pointerIndex});
 }
