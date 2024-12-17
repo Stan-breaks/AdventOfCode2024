@@ -5,6 +5,12 @@ const Index = struct {
     j: usize,
 };
 
+const State = struct {
+    i: usize,
+    j: usize,
+    direction: []u8,
+};
+
 fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
     var pointerStateCopy = std.ArrayList(u8).init(allocator);
     defer pointerStateCopy.deinit();
@@ -37,16 +43,17 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
         mapCopy.items[pointerIndex.i][pointerIndex.j - 1] = 'X';
     }
 
-    var previousMoves = std.ArrayList(Index).init(allocator);
+    var previousMoves = std.ArrayList(State).init(allocator);
     defer previousMoves.deinit();
 
     while (pointerIndexCopy.i > 0 and pointerIndexCopy.i < mapCopy.items.len - 1 and pointerIndexCopy.j > 0 and pointerIndexCopy.j < mapCopy.items[0].len - 1) {
         const indexI = pointerIndexCopy.i;
         const indexJ = pointerIndexCopy.j;
-        if (std.mem.indexOf(Index, previousMoves.items, Index{ .i = indexI, .j = indexJ })) {
+        const state = pointerStateCopy.items;
+        if (std.mem.indexOf(Index, previousMoves.items, State{ .i = indexI, .j = indexJ, .direction = state })) {
             return true;
         }
-        try previousMoves.append(Index{ .i = indexI, .j = indexJ });
+        try previousMoves.append(State{ .i = indexI, .j = indexJ, .direction = state });
         if (std.mem.eql(u8, pointerStateCopy.items, "up")) {
             if (mapCopy.items[pointerIndexCopy.i - 1][pointerIndexCopy.j] == '#') {
                 pointerStateCopy.clearRetainingCapacity();
