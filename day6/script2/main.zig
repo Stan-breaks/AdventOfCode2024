@@ -143,13 +143,15 @@ pub fn main() !void {
         }
         lineIndex += 1;
     }
-    var loopCount: i32 = 0;
+    var possibleObstacles = std.ArrayList(Index).init(allocator);
+    defer possibleObstacles.deinit();
+
     while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1) {
         if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
             const indexI = pointerIndex.i;
             const indexJ = pointerIndex.j;
             if (isGuardStuck(pointerState.items, Index{ .i = indexI, .j = indexJ }, map.items, allocator)) {
-                loopCount += 1;
+                try possibleObstacles.append(Index{ .i = indexI, .j = indexJ });
             }
         }
         if (std.mem.eql(u8, pointerState.items, "up")) {
@@ -186,5 +188,7 @@ pub fn main() !void {
             }
         }
     }
-    try stdout.print("The number of possible infinite loops are {d}\n", .{loopCount});
+    for (possibleObstacles.items) |item| {
+        try stdout.print("{any}\n", .{item});
+    }
 }
