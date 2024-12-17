@@ -14,11 +14,9 @@ const State = struct {
 fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
     var pointerStateCopy = std.ArrayList(u8).init(allocator);
     defer pointerStateCopy.deinit();
-    for (pointerState) |c| {
-        pointerStateCopy.append(c) catch {
-            return false;
-        };
-    }
+    pointerStateCopy.appendSlice(pointerState) catch {
+        return false;
+    };
     var mapCopy = std.ArrayList([]u8).init(allocator);
     defer {
         for (mapCopy.items) |item| {
@@ -39,15 +37,7 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
     pointerIndexCopy.i = pointerIndex.i;
     pointerIndexCopy.j = pointerIndex.j;
 
-    if (std.mem.eql(u8, pointerStateCopy.items, "up")) {
-        mapCopy.items[pointerIndexCopy.i - 1][pointerIndexCopy.j] = '#';
-    } else if (std.mem.eql(u8, pointerStateCopy.items, "right")) {
-        mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j + 1] = '#';
-    } else if (std.mem.eql(u8, pointerStateCopy.items, "down")) {
-        mapCopy.items[pointerIndexCopy.i + 1][pointerIndexCopy.j] = '#';
-    } else if (std.mem.eql(u8, pointerStateCopy.items, "left")) {
-        mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j - 1] = '#';
-    }
+    mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j] = '#';
 
     var previousMoves = std.ArrayList(State).init(allocator);
     defer previousMoves.deinit();
@@ -69,19 +59,7 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
         if (std.mem.eql(u8, pointerStateCopy.items, "up")) {
             if (mapCopy.items[pointerIndexCopy.i - 1][pointerIndexCopy.j] == '#') {
                 pointerStateCopy.clearRetainingCapacity();
-                pointerStateCopy.append('r') catch {
-                    return false;
-                };
-                pointerStateCopy.append('i') catch {
-                    return false;
-                };
-                pointerStateCopy.append('g') catch {
-                    return false;
-                };
-                pointerStateCopy.append('h') catch {
-                    return false;
-                };
-                pointerStateCopy.append('t') catch {
+                pointerStateCopy.appendSlice("right") catch {
                     return false;
                 };
                 pointerIndexCopy.j += 1;
@@ -91,16 +69,7 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
         } else if (std.mem.eql(u8, pointerStateCopy.items, "right")) {
             if (mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j + 1] == '#') {
                 pointerStateCopy.clearRetainingCapacity();
-                pointerStateCopy.append('d') catch {
-                    return false;
-                };
-                pointerStateCopy.append('o') catch {
-                    return false;
-                };
-                pointerStateCopy.append('w') catch {
-                    return false;
-                };
-                pointerStateCopy.append('n') catch {
+                pointerStateCopy.appendSlice("down") catch {
                     return false;
                 };
                 pointerIndexCopy.i += 1;
@@ -110,16 +79,7 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
         } else if (std.mem.eql(u8, pointerStateCopy.items, "down")) {
             if (mapCopy.items[pointerIndexCopy.i + 1][pointerIndexCopy.j] == '#') {
                 pointerStateCopy.clearRetainingCapacity();
-                pointerStateCopy.append('l') catch {
-                    return false;
-                };
-                pointerStateCopy.append('e') catch {
-                    return false;
-                };
-                pointerStateCopy.append('f') catch {
-                    return false;
-                };
-                pointerStateCopy.append('t') catch {
+                pointerStateCopy.appendSlice("left") catch {
                     return false;
                 };
                 pointerIndexCopy.j -= 1;
@@ -129,10 +89,7 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
         } else if (std.mem.eql(u8, pointerStateCopy.items, "left")) {
             if (mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j - 1] == '#') {
                 pointerStateCopy.clearRetainingCapacity();
-                pointerStateCopy.append('u') catch {
-                    return false;
-                };
-                pointerStateCopy.append('p') catch {
+                pointerStateCopy.appendSlice("up") catch {
                     return false;
                 };
                 pointerIndexCopy.i -= 1;
@@ -186,11 +143,9 @@ pub fn main() !void {
         }
         lineIndex += 1;
     }
-    var count: i32 = 0;
     var loopCount: i32 = 0;
     while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1) {
-        map.items[pointerIndex.i][pointerIndex.j] = 'X';
-        if (count > 0) {
+        if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
             const indexI = pointerIndex.i;
             const indexJ = pointerIndex.j;
             if (isGuardStuck(pointerState.items, Index{ .i = indexI, .j = indexJ }, map.items, allocator)) {
@@ -200,11 +155,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, pointerState.items, "up")) {
             if (map.items[pointerIndex.i - 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append('r');
-                try pointerState.append('i');
-                try pointerState.append('g');
-                try pointerState.append('h');
-                try pointerState.append('t');
+                try pointerState.appendSlice("right");
                 pointerIndex.j += 1;
             } else {
                 pointerIndex.i -= 1;
@@ -212,10 +163,7 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, pointerState.items, "right")) {
             if (map.items[pointerIndex.i][pointerIndex.j + 1] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append('d');
-                try pointerState.append('o');
-                try pointerState.append('w');
-                try pointerState.append('n');
+                try pointerState.appendSlice("down");
                 pointerIndex.i += 1;
             } else {
                 pointerIndex.j += 1;
@@ -223,10 +171,7 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, pointerState.items, "down")) {
             if (map.items[pointerIndex.i + 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append('l');
-                try pointerState.append('e');
-                try pointerState.append('f');
-                try pointerState.append('t');
+                try pointerState.appendSlice("left");
                 pointerIndex.j -= 1;
             } else {
                 pointerIndex.i += 1;
@@ -234,16 +179,12 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, pointerState.items, "left")) {
             if (map.items[pointerIndex.i][pointerIndex.j - 1] == '#') {
                 pointerState.clearRetainingCapacity();
-                try pointerState.append('u');
-                try pointerState.append('p');
+                try pointerState.appendSlice("up");
                 pointerIndex.i -= 1;
             } else {
                 pointerIndex.j -= 1;
             }
         }
-        if (map.items[pointerIndex.i][pointerIndex.j] != 'X') {
-            count += 1;
-        }
     }
-    try stdout.print("{d}\n", .{loopCount});
+    try stdout.print("The number of possible infinite loops are {d}\n", .{loopCount});
 }
