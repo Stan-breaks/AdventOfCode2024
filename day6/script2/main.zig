@@ -53,13 +53,14 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
     defer previousMoves.deinit();
 
     while (pointerIndexCopy.i > 0 and pointerIndexCopy.i < mapCopy.items.len - 1 and pointerIndexCopy.j > 0 and pointerIndexCopy.j < mapCopy.items[0].len - 1) {
-        const indexI = pointerIndexCopy.i;
-        const indexJ = pointerIndexCopy.j;
-        const state = pointerStateCopy.items;
-        if (std.mem.indexOf(State, previousMoves.items, State{ .i = indexI, .j = indexJ, .direction = state })) {
+        const move: State = undefined;
+        move.i = pointerIndexCopy.i;
+        move.j = pointerIndexCopy.j;
+        move.direction = pointerStateCopy.items;
+        if (std.mem.indexOf(State, previousMoves.items, move)) {
             return true;
         }
-        previousMoves.append(State{ .i = indexI, .j = indexJ, .direction = state }) catch {
+        previousMoves.append(move) catch {
             return false;
         };
         if (std.mem.eql(u8, pointerStateCopy.items, "up")) {
