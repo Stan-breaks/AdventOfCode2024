@@ -51,6 +51,7 @@ fn isGuardStuck(initialDirection: Direction, pointerIndex: Index, map: [][]u8, a
         .j = pointerIndex.j,
         .direction = initialDirection,
     };
+
     mapCopy.items[currentState.i][currentState.j] = '#';
 
     var previousStates = std.ArrayList(State).init(allocator);
@@ -137,8 +138,11 @@ pub fn main() !void {
     while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and
         pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1)
     {
-        if (isGuardStuck(pointerDirection, pointerIndex, map.items, allocator)) {
-            count += 1;
+        if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
+            if (isGuardStuck(pointerDirection, pointerIndex, map.items, allocator)) {
+                try possibleObstacles.append(Index{ .i = pointerIndex.i, .j = pointerIndex.j });
+                count += 1;
+            }
         }
         const nextPos = switch (pointerDirection) {
             .up => Index{ .i = pointerIndex.i - 1, .j = pointerIndex.j },
@@ -158,12 +162,9 @@ pub fn main() !void {
             pointerIndex.i = nextPos.i;
             pointerIndex.j = nextPos.j;
         }
-        count += 1;
     }
 
-    if (possibleObstacles.items) |item| {
-        map.items[item[0].i][item[0].j] = 'O';
-    }
+    //   map.items[possibleObstacles.items[0].i][possibleObstacles.items[0].j] = 'O';
 
     for (map.items) |item| {
         try stdout.print("{s}\n", .{item});
