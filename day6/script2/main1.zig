@@ -11,6 +11,97 @@ const State = struct {
     direction: []u8,
 };
 
+fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
+    var pointerStateCopy = std.ArrayList(u8).init(allocator);
+    defer pointerStateCopy.deinit();
+    pointerStateCopy.appendSlice(pointerState) catch {
+        return false;
+    };
+    var mapCopy = std.ArrayList([]u8).init(allocator);
+    defer {
+        for (mapCopy.items) |item| {
+            allocator.free(item);
+        }
+        mapCopy.deinit();
+    }
+    for (map) |item| {
+        const mutableItem = allocator.alloc(u8, item.len) catch {
+            return false;
+        };
+        @memcpy(mutableItem, item);
+        mapCopy.append(mutableItem) catch {
+            return false;
+        };
+    }
+    var pointerIndexCopy: Index = undefined;
+    pointerIndexCopy.i = pointerIndex.i;
+    pointerIndexCopy.j = pointerIndex.j;
+
+    mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j] = '#';
+
+    var previousMoves = std.ArrayList(State).init(allocator);
+    defer previousMoves.deinit();
+
+    while (pointerIndexCopy.i > 0 and pointerIndexCopy.i < mapCopy.items.len - 1 and pointerIndexCopy.j > 0 and pointerIndexCopy.j < mapCopy.items[0].len - 1) {
+        const move: State = State{
+            .i = pointerIndexCopy.i,
+            .j = pointerIndexCopy.j,
+            .direction = pointerStateCopy.items,
+        };
+        for (previousMoves.items) |previousMove| {
+            if (previousMove.i == move.i and previousMove.j == move.j and std.mem.eql(u8, previousMove.direction, move.direction)) {
+                return true;
+            }
+        }
+        previousMoves.append(move) catch {
+            return false;
+        };
+        if (std.mem.eql(u8, pointerStateCopy.items, "up")) {
+            if (mapCopy.items[pointerIndexCopy.i - 1][pointerIndexCopy.j] == '#') {
+                pointerStateCopy.clearRetainingCapacity();
+                pointerStateCopy.appendSlice("right") catch {
+                    return false;
+                };
+                pointerIndexCopy.j += 1;
+            } else {
+                pointerIndexCopy.i -= 1;
+            }
+        } else if (std.mem.eql(u8, pointerStateCopy.items, "right")) {
+            if (mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j + 1] == '#') {
+                pointerStateCopy.clearRetainingCapacity();
+                pointerStateCopy.appendSlice("down") catch {
+                    return false;
+                };
+                pointerIndexCopy.i += 1;
+            } else {
+                pointerIndexCopy.j += 1;
+            }
+        } else if (std.mem.eql(u8, pointerStateCopy.items, "down")) {
+            if (mapCopy.items[pointerIndexCopy.i + 1][pointerIndexCopy.j] == '#') {
+                pointerStateCopy.clearRetainingCapacity();
+                pointerStateCopy.appendSlice("left") catch {
+                    return false;
+                };
+                pointerIndexCopy.j -= 1;
+            } else {
+                pointerIndexCopy.i += 1;
+            }
+        } else if (std.mem.eql(u8, pointerStateCopy.items, "left")) {
+            if (mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j - 1] == '#') {
+                pointerStateCopy.clearRetainingCapacity();
+                pointerStateCopy.appendSlice("up") catch {
+                    return false;
+                };
+                pointerIndexCopy.i -= 1;
+            } else {
+                pointerIndexCopy.j -= 1;
+            }
+        }
+    }
+
+    return false;
+}
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -52,39 +143,18 @@ pub fn main() !void {
         }
         lineIndex += 1;
     }
+    var possibleObstacles = std.ArrayList(Index).init(allocator);
+    defer possibleObstacles.deinit();
 
-    var previousStates = std.ArrayList(State).init(allocator);
-    defer previousStates.deinit();
-
-    var path = std.ArrayList(Index).init(allocator);
-    defer path.deinit();
-
-    // Collect the guard's path until it starts repeating
-    while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and
-        pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1)
-    {
-        const currentState = State{
-            .i = pointerIndex.i,
-            .j = pointerIndex.j,
-            .direction = pointerState.items,
-        };
-
-        // Check if we've seen this state before
-        var foundRepeat = false;
-        for (previousStates.items) |prev| {
-            if (prev.i == currentState.i and
-                prev.j == currentState.j and
-                std.mem.eql(u8, prev.direction, currentState.direction))
-            {
-                foundRepeat = true;
-                break;
+    while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1) {
+        map.items[pointerIndex.i][pointerIndex.j] = '.';
+        if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
+            const indexI = pointerIndex.i;
+            const indexJ = pointerIndex.j;
+            if (isGuardStuck(pointerState.items, Index{ .i = indexI, .j = indexJ }, map.items, allocator)) {
+                try possibleObstacles.append(Index{ .i = indexI, .j = indexJ });
             }
         }
-        if (foundRepeat) break;
-
-        try previousStates.append(currentState);
-        try path.append(Index{ .i = pointerIndex.i, .j = pointerIndex.j });
-
         if (std.mem.eql(u8, pointerState.items, "up")) {
             if (map.items[pointerIndex.i - 1][pointerIndex.j] == '#') {
                 pointerState.clearRetainingCapacity();
@@ -118,53 +188,7 @@ pub fn main() !void {
                 pointerIndex.j -= 1;
             }
         }
+        map.items[pointerIndex.i][pointerIndex.j] = '^';
     }
-
-    var loopPositions = std.AutoHashMap(Index, void).init(allocator);
-    defer loopPositions.deinit();
-
-    // Find positions that would create loops
-    for (path.items) |pos| {
-        const adjacents = [_]Index{
-            Index{ .i = pos.i - 1, .j = pos.j }, // up
-            Index{ .i = pos.i + 1, .j = pos.j }, // down
-            Index{ .i = pos.i, .j = pos.j - 1 }, // left
-            Index{ .i = pos.i, .j = pos.j + 1 }, // right
-        };
-
-        for (adjacents) |adj| {
-            // Skip if out of bounds or already a wall
-            if (adj.i == 0 or adj.i >= map.items.len - 1 or
-                adj.j == 0 or adj.j >= map.items[0].len - 1 or
-                map.items[adj.i][adj.j] == '#')
-            {
-                continue;
-            }
-
-            // Skip the guard's starting position
-            if (map.items[adj.i][adj.j] == '^') {
-                continue;
-            }
-
-            // Count adjacent path positions
-            var adjacentPathCount: u32 = 0;
-            for (path.items) |pathPos| {
-                if (isAdjacent(adj, pathPos)) {
-                    adjacentPathCount += 1;
-                }
-            }
-
-            if (adjacentPathCount >= 2) {
-                try loopPositions.put(adj, {});
-            }
-        }
-    }
-
-    try stdout.print("Number of possible positions for obstruction: {d}\n", .{loopPositions.count()});
-}
-
-fn isAdjacent(a: Index, b: Index) bool {
-    const di = if (a.i > b.i) a.i - b.i else b.i - a.i;
-    const dj = if (a.j > b.j) a.j - b.j else b.j - a.j;
-    return (di == 1 and dj == 0) or (di == 0 and dj == 1);
+    try stdout.print("{d}\n", .{possibleObstacles.items.len});
 }

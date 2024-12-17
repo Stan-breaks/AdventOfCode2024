@@ -134,15 +134,16 @@ pub fn main() !void {
     var possibleObstacles = std.ArrayList(Index).init(allocator);
     defer possibleObstacles.deinit();
 
-    var count: i32 = 0;
     while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and
         pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1)
     {
         if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
             if (isGuardStuck(pointerDirection, pointerIndex, map.items, allocator)) {
                 try possibleObstacles.append(Index{ .i = pointerIndex.i, .j = pointerIndex.j });
-                count += 1;
             }
+        } else {
+            map.items[pointerIndex.i][pointerIndex.j] = '.';
+            pointerIndex.i -= 1;
         }
         const nextPos = switch (pointerDirection) {
             .up => Index{ .i = pointerIndex.i - 1, .j = pointerIndex.j },
@@ -164,11 +165,5 @@ pub fn main() !void {
         }
     }
 
-    //   map.items[possibleObstacles.items[0].i][possibleObstacles.items[0].j] = 'O';
-
-    for (map.items) |item| {
-        try stdout.print("{s}\n", .{item});
-    }
-
-    try stdout.print("{d}\n", .{count});
+    try stdout.print("{d}\n", .{possibleObstacles.items.len});
 }
