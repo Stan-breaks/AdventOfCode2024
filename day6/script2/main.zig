@@ -40,25 +40,28 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
     pointerIndexCopy.j = pointerIndex.j;
 
     if (std.mem.eql(u8, pointerStateCopy.items, "up")) {
-        mapCopy.items[pointerIndex.i - 1][pointerIndex.j] = '#';
+        mapCopy.items[pointerIndexCopy.i - 1][pointerIndexCopy.j] = '#';
     } else if (std.mem.eql(u8, pointerStateCopy.items, "right")) {
-        mapCopy.items[pointerIndex.i][pointerIndex.j + 1] = '#';
+        mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j + 1] = '#';
     } else if (std.mem.eql(u8, pointerStateCopy.items, "down")) {
-        mapCopy.items[pointerIndex.i + 1][pointerIndex.j] = '#';
+        mapCopy.items[pointerIndexCopy.i + 1][pointerIndexCopy.j] = '#';
     } else if (std.mem.eql(u8, pointerStateCopy.items, "left")) {
-        mapCopy.items[pointerIndex.i][pointerIndex.j - 1] = 'X';
+        mapCopy.items[pointerIndexCopy.i][pointerIndexCopy.j - 1] = '#';
     }
 
     var previousMoves = std.ArrayList(State).init(allocator);
     defer previousMoves.deinit();
 
     while (pointerIndexCopy.i > 0 and pointerIndexCopy.i < mapCopy.items.len - 1 and pointerIndexCopy.j > 0 and pointerIndexCopy.j < mapCopy.items[0].len - 1) {
-        const move: State = undefined;
-        move.i = pointerIndexCopy.i;
-        move.j = pointerIndexCopy.j;
-        move.direction = pointerStateCopy.items;
-        if (std.mem.indexOf(State, previousMoves.items, move)) {
-            return true;
+        const move: State = State{
+            .i = pointerIndexCopy.i,
+            .j = pointerIndexCopy.j,
+            .direction = pointerStateCopy.items,
+        };
+        for (previousMoves.items) |previousMove| {
+            if (previousMove.i == move.i and previousMove.j == move.j and std.mem.eql(u8, previousMove.direction, move.direction)) {
+                return true;
+            }
         }
         previousMoves.append(move) catch {
             return false;
@@ -138,6 +141,7 @@ fn isGuardStuck(pointerState: []u8, pointerIndex: Index, map: [][]u8, allocator:
             }
         }
     }
+
     return false;
 }
 
