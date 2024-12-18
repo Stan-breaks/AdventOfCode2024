@@ -18,6 +18,14 @@ const State = struct {
     direction: Direction,
 };
 
+fn getPreviousMove(currentState: State) State {
+    return switch (currentState.direction) {
+        .up => State{ .i = currentState.i + 1, .j = currentState.j, .direction = currentState.direction },
+        .right => State{ .i = currentState.i, .j = currentState.j - 1, .direction = currentState.direction },
+        .down => State{ .i = currentState.i - 1, .j = currentState.j, .direction = currentState.direction },
+        .left => State{ .i = currentState.i, .j = currentState.j + 1, .direction = currentState.direction },
+    };
+}
 fn moveGuard(currentState: *State, map: [][]u8) void {
     const nextPos = switch (currentState.direction) {
         .up => Index{ .i = currentState.i - 1, .j = currentState.j },
@@ -48,31 +56,26 @@ fn getNextDirection(current: Direction) Direction {
     };
 }
 
-fn isGuardStuck(startState: State, map: [][]u8, allocator: std.mem.Allocator) bool {
-    var currentState = State{
-        .i = startState.i,
-        .j = startState.j,
-        .direction = startState.direction,
-    };
-
+fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) bool {
+    var startState = getPreviousMove(currentState);
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
 
-    while (currentState.i > 0 and currentState.i < map.len - 1 and
-        currentState.j > 0 and currentState.j < map[0].len - 1)
+    while (startState.i > 0 and startState.i < map.len - 1 and
+        startState.j > 0 and startState.j < map[0].len - 1)
     {
         for (previousStates.items) |previousState| {
-            if (previousState.i == currentState.i and
-                previousState.j == currentState.j and
-                previousState.direction == currentState.direction)
+            if (previousState.i == startState.i and
+                previousState.j == startState.j and
+                previousState.direction == startState.direction)
             {
                 return true;
             }
         }
-        previousStates.append(currentState) catch {
+        previousStates.append(startState) catch {
             return false;
         };
-        moveGuard(&currentState, map);
+        moveGuard(&startState, map);
     }
     return false;
 }
@@ -82,7 +85,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -114,7 +117,6 @@ pub fn main() !void {
         lineIndex += 1;
     }
 
-    const startState: State = State{ .i = currentState.i, .j = currentState.j, .direction = .up };
     var loops: i32 = 0;
     var possibleObstacles = std.ArrayList(Index).init(allocator);
     defer possibleObstacles.deinit();
@@ -124,7 +126,7 @@ pub fn main() !void {
     {
         if (map.items[currentState.i][currentState.j] != '^') {
             map.items[currentState.i][currentState.j] = '#';
-            if (isGuardStuck(startState, map.items, allocator)) {
+            if (isGuardStuck(currentState, map.items, allocator)) {
                 loops += 1;
             }
             map.items[currentState.i][currentState.j] = '.';
