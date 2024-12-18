@@ -18,6 +18,27 @@ const State = struct {
     direction: Direction,
 };
 
+fn moveGuard(currentState: *State, map: [][]u8) void {
+    const nextPos = switch (currentState.direction) {
+        .up => Index{ .i = currentState.i - 1, .j = currentState.j },
+        .right => Index{ .i = currentState.i, .j = currentState.j + 1 },
+        .down => Index{ .i = currentState.i + 1, .j = currentState.j },
+        .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
+    };
+    if (map.items[nextPos.i][nextPos.j] == '#') {
+        currentState.direction = getNextDirection(currentState);
+        switch (currentState.direction) {
+            .up => currentState.i -= 1,
+            .right => currentState.j += 1,
+            .down => currentState.i += 1,
+            .left => currentState.j -= 1,
+        }
+    } else {
+        currentState.i = nextPos.i;
+        currentState.j = nextPos.j;
+    }
+}
+
 fn getNextDirection(current: Direction) Direction {
     return switch (current) {
         .up => .right,
@@ -54,24 +75,7 @@ fn isGuardStuck(startIndex: Index, initialDirection: Direction, pointerIndex: In
         previousStates.append(currentState) catch {
             return false;
         };
-        const nextPos = switch (currentState.direction) {
-            .up => Index{ .i = currentState.i - 1, .j = currentState.j },
-            .right => Index{ .i = currentState.i, .j = currentState.j + 1 },
-            .down => Index{ .i = currentState.i + 1, .j = currentState.j },
-            .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
-        };
-        if (map[nextPos.i][nextPos.j] == '#') {
-            currentState.direction = getNextDirection(currentState.direction);
-            switch (currentState.direction) {
-                .up => currentState.i -= 1,
-                .right => currentState.j += 1,
-                .down => currentState.i += 1,
-                .left => currentState.j -= 1,
-            }
-        } else {
-            currentState.i = nextPos.i;
-            currentState.j = nextPos.j;
-        }
+        moveGuard(currentState, map);
     }
     return false;
 }
