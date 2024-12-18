@@ -48,11 +48,11 @@ fn getNextDirection(current: Direction) Direction {
     };
 }
 
-fn isGuardStuck(startIndex: Index, initialDirection: Direction, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
+fn isGuardStuck(startIndex: Index, state: State, map: [][]u8, allocator: std.mem.Allocator) bool {
     var currentState = State{
-        .i = pointerIndex.i,
-        .j = pointerIndex.j,
-        .direction = initialDirection,
+        .i = state.i,
+        .j = state.j,
+        .direction = state.direction,
     };
 
     currentState.i = startIndex.i;
@@ -103,8 +103,6 @@ pub fn main() !void {
 
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
     var currentState: State = State{ .direction = Direction.up };
-    var pointerIndex: Index = undefined;
-    var pointerDirection: Direction = .up;
     var lineIndex: usize = 0;
 
     while (lineTokenizer.next()) |line| {
@@ -145,16 +143,16 @@ pub fn main() !void {
             .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
         };
         if (map.items[nextPos.i][nextPos.j] == '#') {
-            pointerDirection = getNextDirection(pointerDirection);
-            switch (pointerDirection) {
-                .up => pointerIndex.i -= 1,
-                .right => pointerIndex.j += 1,
-                .down => pointerIndex.i += 1,
-                .left => pointerIndex.j -= 1,
+            currentState.direction = getNextDirection(currentState.direction);
+            switch (currentState.direction) {
+                .up => currentState.i -= 1,
+                .right => currentState.j += 1,
+                .down => currentState.i += 1,
+                .left => currentState.j -= 1,
             }
         } else {
-            pointerIndex.i = nextPos.i;
-            pointerIndex.j = nextPos.j;
+            currentState.i = nextPos.i;
+            currentState.j = nextPos.j;
         }
     }
 
