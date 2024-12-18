@@ -25,8 +25,8 @@ fn moveGuard(currentState: *State, map: [][]u8) void {
         .down => Index{ .i = currentState.i + 1, .j = currentState.j },
         .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
     };
-    if (map.items[nextPos.i][nextPos.j] == '#') {
-        currentState.direction = getNextDirection(currentState);
+    if (map[nextPos.i][nextPos.j] == '#') {
+        currentState.direction = getNextDirection(currentState.direction);
         switch (currentState.direction) {
             .up => currentState.i -= 1,
             .right => currentState.j += 1,
@@ -75,7 +75,7 @@ fn isGuardStuck(startIndex: Index, state: State, map: [][]u8, allocator: std.mem
         previousStates.append(currentState) catch {
             return false;
         };
-        moveGuard(currentState, map);
+        moveGuard(&currentState, map);
     }
     return false;
 }
@@ -102,7 +102,7 @@ pub fn main() !void {
     }
 
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
-    var currentState: State = State{ .direction = Direction.up };
+    var currentState: State = State{ .i = undefined, .j = undefined, .direction = Direction.up };
     var lineIndex: usize = 0;
 
     while (lineTokenizer.next()) |line| {
@@ -116,6 +116,7 @@ pub fn main() !void {
         }
         lineIndex += 1;
     }
+
     const startIndex: Index = Index{
         .i = currentState.i,
         .j = currentState.j,
@@ -136,24 +137,7 @@ pub fn main() !void {
             map.items[currentState.i][currentState.j] = '.';
             currentState.i -= 1;
         }
-        const nextPos = switch (currentState.direction) {
-            .up => Index{ .i = currentState.i - 1, .j = currentState.j },
-            .right => Index{ .i = currentState.i, .j = currentState.j + 1 },
-            .down => Index{ .i = currentState.i + 1, .j = currentState.j },
-            .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
-        };
-        if (map.items[nextPos.i][nextPos.j] == '#') {
-            currentState.direction = getNextDirection(currentState.direction);
-            switch (currentState.direction) {
-                .up => currentState.i -= 1,
-                .right => currentState.j += 1,
-                .down => currentState.i += 1,
-                .left => currentState.j -= 1,
-            }
-        } else {
-            currentState.i = nextPos.i;
-            currentState.j = nextPos.j;
-        }
+        moveGuard(&currentState, map.items);
     }
 
     try stdout.print("{any}\n", .{possibleObstacles.items});
