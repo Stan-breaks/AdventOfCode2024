@@ -28,39 +28,20 @@ fn getNextDirection(current: Direction) Direction {
 }
 
 fn isGuardStuck(startIndex: Index, initialDirection: Direction, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
-    var mapCopy = std.ArrayList([]u8).init(allocator);
-    defer {
-        for (mapCopy.items) |item| {
-            allocator.free(item);
-        }
-        mapCopy.deinit();
-    }
-
-    for (map) |item| {
-        const mutableItem = allocator.alloc(u8, item.len) catch {
-            return false;
-        };
-        @memcpy(mutableItem, item);
-        mapCopy.append(mutableItem) catch {
-            return false;
-        };
-    }
-
     var currentState = State{
         .i = pointerIndex.i,
         .j = pointerIndex.j,
         .direction = initialDirection,
     };
 
-    mapCopy.items[currentState.i][currentState.j] = '#';
     currentState.i = startIndex.i;
     currentState.j = startIndex.j;
 
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
 
-    while (currentState.i > 0 and currentState.i < mapCopy.items.len - 1 and
-        currentState.j > 0 and currentState.j < mapCopy.items[0].len - 1)
+    while (currentState.i > 0 and currentState.i < map.len - 1 and
+        currentState.j > 0 and currentState.j < map[0].len - 1)
     {
         for (previousStates.items) |previousState| {
             if (previousState.i == currentState.i and
@@ -79,7 +60,7 @@ fn isGuardStuck(startIndex: Index, initialDirection: Direction, pointerIndex: In
             .down => Index{ .i = currentState.i + 1, .j = currentState.j },
             .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
         };
-        if (mapCopy.items[nextPos.i][nextPos.j] == '#') {
+        if (map[nextPos.i][nextPos.j] == '#') {
             currentState.direction = getNextDirection(currentState.direction);
             switch (currentState.direction) {
                 .up => currentState.i -= 1,
@@ -143,9 +124,11 @@ pub fn main() !void {
         pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1)
     {
         if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
+            map.items[pointerIndex.i][pointerIndex.j] = '#';
             if (isGuardStuck(startIndex, pointerDirection, pointerIndex, map.items, allocator)) {
                 try possibleObstacles.append(Index{ .i = pointerIndex.i, .j = pointerIndex.j });
             }
+            map.items[pointerIndex.i][pointerIndex.j] = '.';
         } else {
             map.items[pointerIndex.i][pointerIndex.j] = '.';
             pointerIndex.i -= 1;
@@ -169,9 +152,6 @@ pub fn main() !void {
             pointerIndex.j = nextPos.j;
         }
     }
-    for (map.items) |item| {
-        try stdout.print("{s}\n", .{item});
-    }
 
-    try stdout.print("{d}\n", .{possibleObstacles.items.len});
+    try stdout.print("{any}\n", .{possibleObstacles.items});
 }
