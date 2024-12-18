@@ -27,7 +27,7 @@ fn getNextDirection(current: Direction) Direction {
     };
 }
 
-fn isGuardStuck(initialDirection: Direction, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
+fn isGuardStuck(startIndex: Index, initialDirection: Direction, pointerIndex: Index, map: [][]u8, allocator: std.mem.Allocator) bool {
     var mapCopy = std.ArrayList([]u8).init(allocator);
     defer {
         for (mapCopy.items) |item| {
@@ -53,6 +53,8 @@ fn isGuardStuck(initialDirection: Direction, pointerIndex: Index, map: [][]u8, a
     };
 
     mapCopy.items[currentState.i][currentState.j] = '#';
+    currentState.i = startIndex.i;
+    currentState.j = startIndex.j;
 
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
@@ -130,7 +132,10 @@ pub fn main() !void {
         }
         lineIndex += 1;
     }
-
+    const startIndex: Index = Index{
+        .i = pointerIndex.i,
+        .j = pointerIndex.j,
+    };
     var possibleObstacles = std.ArrayList(Index).init(allocator);
     defer possibleObstacles.deinit();
 
@@ -138,7 +143,7 @@ pub fn main() !void {
         pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1)
     {
         if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
-            if (isGuardStuck(pointerDirection, pointerIndex, map.items, allocator)) {
+            if (isGuardStuck(startIndex, pointerDirection, pointerIndex, map.items, allocator)) {
                 try possibleObstacles.append(Index{ .i = pointerIndex.i, .j = pointerIndex.j });
             }
         } else {
@@ -163,6 +168,9 @@ pub fn main() !void {
             pointerIndex.i = nextPos.i;
             pointerIndex.j = nextPos.j;
         }
+    }
+    for (map.items) |item| {
+        try stdout.print("{s}\n", .{item});
     }
 
     try stdout.print("{d}\n", .{possibleObstacles.items.len});
