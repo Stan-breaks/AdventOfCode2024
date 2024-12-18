@@ -54,21 +54,16 @@ fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) 
         .j = currentState.j,
         .direction = currentState.direction,
     };
-    var previousStates = std.ArrayList(State).init(allocator);
-    defer previousStates.deinit();
+    var visited = std.AutoHashMap(State, void).init(allocator);
+    defer visited.deinit();
 
     while (startState.i > 0 and startState.i < map.len - 1 and
         startState.j > 0 and startState.j < map[0].len - 1)
     {
-        for (previousStates.items) |previousState| {
-            if (previousState.i == startState.i and
-                previousState.j == startState.j and
-                previousState.direction == startState.direction)
-            {
-                return true;
-            }
+        if (visited.contains(startState)) {
+            return true;
         }
-        previousStates.append(startState) catch {
+        visited.put(startState, {}) catch {
             return false;
         };
         moveGuard(&startState, map);
