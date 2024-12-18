@@ -102,6 +102,7 @@ pub fn main() !void {
     }
 
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
+    var currentState: State = State{ .direction = Direction.up };
     var pointerIndex: Index = undefined;
     var pointerDirection: Direction = .up;
     var lineIndex: usize = 0;
@@ -112,36 +113,36 @@ pub fn main() !void {
         try map.append(mutableLine);
 
         if (std.mem.indexOf(u8, line, "^")) |j| {
-            pointerIndex.i = lineIndex;
-            pointerIndex.j = j;
+            currentState.i = lineIndex;
+            currentState.j = j;
         }
         lineIndex += 1;
     }
     const startIndex: Index = Index{
-        .i = pointerIndex.i,
-        .j = pointerIndex.j,
+        .i = currentState.i,
+        .j = currentState.j,
     };
     var possibleObstacles = std.ArrayList(Index).init(allocator);
     defer possibleObstacles.deinit();
 
-    while (pointerIndex.i > 0 and pointerIndex.i < map.items.len - 1 and
-        pointerIndex.j > 0 and pointerIndex.j < map.items[0].len - 1)
+    while (currentState.i > 0 and currentState.i < map.items.len - 1 and
+        currentState.j > 0 and currentState.j < map.items[0].len - 1)
     {
-        if (map.items[pointerIndex.i][pointerIndex.j] != '^') {
-            map.items[pointerIndex.i][pointerIndex.j] = '#';
-            if (isGuardStuck(startIndex, pointerDirection, pointerIndex, map.items, allocator)) {
-                try possibleObstacles.append(Index{ .i = pointerIndex.i, .j = pointerIndex.j });
+        if (map.items[currentState.i][currentState.j] != '^') {
+            map.items[currentState.i][currentState.j] = '#';
+            if (isGuardStuck(startIndex, currentState, map.items, allocator)) {
+                try possibleObstacles.append(Index{ .i = currentState.i, .j = currentState.j });
             }
-            map.items[pointerIndex.i][pointerIndex.j] = '.';
+            map.items[currentState.i][currentState.j] = '.';
         } else {
-            map.items[pointerIndex.i][pointerIndex.j] = '.';
-            pointerIndex.i -= 1;
+            map.items[currentState.i][currentState.j] = '.';
+            currentState.i -= 1;
         }
-        const nextPos = switch (pointerDirection) {
-            .up => Index{ .i = pointerIndex.i - 1, .j = pointerIndex.j },
-            .right => Index{ .i = pointerIndex.i, .j = pointerIndex.j + 1 },
-            .down => Index{ .i = pointerIndex.i + 1, .j = pointerIndex.j },
-            .left => Index{ .i = pointerIndex.i, .j = pointerIndex.j - 1 },
+        const nextPos = switch (currentState.direction) {
+            .up => Index{ .i = currentState.i - 1, .j = currentState.j },
+            .right => Index{ .i = currentState.i, .j = currentState.j + 1 },
+            .down => Index{ .i = currentState.i + 1, .j = currentState.j },
+            .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
         };
         if (map.items[nextPos.i][nextPos.j] == '#') {
             pointerDirection = getNextDirection(pointerDirection);
