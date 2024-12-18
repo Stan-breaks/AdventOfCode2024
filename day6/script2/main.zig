@@ -48,15 +48,12 @@ fn getNextDirection(current: Direction) Direction {
     };
 }
 
-fn isGuardStuck(startIndex: Index, state: State, map: [][]u8, allocator: std.mem.Allocator) bool {
+fn isGuardStuck(startState: State, map: [][]u8, allocator: std.mem.Allocator) bool {
     var currentState = State{
-        .i = state.i,
-        .j = state.j,
-        .direction = state.direction,
+        .i = startState.i,
+        .j = startState.j,
+        .direction = startState.direction,
     };
-
-    currentState.i = startIndex.i;
-    currentState.j = startIndex.j;
 
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
@@ -102,7 +99,7 @@ pub fn main() !void {
     }
 
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
-    var currentState: State = State{ .i = undefined, .j = undefined, .direction = Direction.up };
+    var currentState: State = State{ .i = undefined, .j = undefined, .direction = .up };
     var lineIndex: usize = 0;
 
     while (lineTokenizer.next()) |line| {
@@ -117,10 +114,7 @@ pub fn main() !void {
         lineIndex += 1;
     }
 
-    const startIndex: Index = Index{
-        .i = currentState.i,
-        .j = currentState.j,
-    };
+    const startState: State = State{ .i = currentState.i, .j = currentState.j, .direction = .up };
     var possibleObstacles = std.ArrayList(Index).init(allocator);
     defer possibleObstacles.deinit();
 
@@ -129,7 +123,7 @@ pub fn main() !void {
     {
         if (map.items[currentState.i][currentState.j] != '^') {
             map.items[currentState.i][currentState.j] = '#';
-            if (isGuardStuck(startIndex, currentState, map.items, allocator)) {
+            if (isGuardStuck(startState, map.items, allocator)) {
                 try possibleObstacles.append(Index{ .i = currentState.i, .j = currentState.j });
             }
             map.items[currentState.i][currentState.j] = '.';
