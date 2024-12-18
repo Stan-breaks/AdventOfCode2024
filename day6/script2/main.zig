@@ -108,9 +108,11 @@ pub fn main() !void {
         lineIndex += 1;
     }
 
-    var loops: i32 = 0;
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
+
+    var possibleObstacles = std.AutoHashMap(Index, void).init(allocator);
+    defer possibleObstacles.deinit();
 
     while (currentState.i > 0 and currentState.i < map.items.len - 1 and
         currentState.j > 0 and currentState.j < map.items[0].len - 1)
@@ -122,9 +124,11 @@ pub fn main() !void {
         const testState = previousStates.items[i - 1];
         map.items[previousStates.items[i].i][previousStates.items[i].j] = '#';
         if (isGuardStuck(testState, map.items, allocator)) {
-            loops += 1;
+            if (!possibleObstacles.contains(Index{ .i = previousStates.items[i].i, .j = previousStates.items[i].j })) {
+                try possibleObstacles.put(Index{ .i = previousStates.items[i].i, .j = previousStates.items[i].j }, {});
+            }
         }
         map.items[previousStates.items[i].i][previousStates.items[i].j] = '.';
     }
-    try stdout.print("{d}\n", .{loops});
+    try stdout.print("{any}\n", .{possibleObstacles.count()});
 }
