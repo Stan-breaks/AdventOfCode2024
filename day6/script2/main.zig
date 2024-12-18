@@ -18,14 +18,6 @@ const State = struct {
     direction: Direction,
 };
 
-fn getPreviousMove(currentState: State) State {
-    return switch (currentState.direction) {
-        .up => State{ .i = currentState.i + 1, .j = currentState.j, .direction = currentState.direction },
-        .right => State{ .i = currentState.i, .j = currentState.j - 1, .direction = currentState.direction },
-        .down => State{ .i = currentState.i - 1, .j = currentState.j, .direction = currentState.direction },
-        .left => State{ .i = currentState.i, .j = currentState.j + 1, .direction = currentState.direction },
-    };
-}
 fn moveGuard(currentState: *State, map: [][]u8) void {
     const nextPos = switch (currentState.direction) {
         .up => Index{ .i = currentState.i - 1, .j = currentState.j },
@@ -57,7 +49,11 @@ fn getNextDirection(current: Direction) Direction {
 }
 
 fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) bool {
-    var startState = getPreviousMove(currentState);
+    var startState: State = State{
+        .i = currentState.i,
+        .j = currentState.j,
+        .direction = currentState.direction,
+    };
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
 
@@ -85,7 +81,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
+    const file = try std.fs.cwd().openFile("test_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -118,15 +114,15 @@ pub fn main() !void {
     }
 
     var loops: i32 = 0;
-    var possibleObstacles = std.ArrayList(Index).init(allocator);
-    defer possibleObstacles.deinit();
+    var previousStates = std.ArrayList(State).init(allocator);
+    defer previousStates.deinit();
 
     while (currentState.i > 0 and currentState.i < map.items.len - 1 and
         currentState.j > 0 and currentState.j < map.items[0].len - 1)
     {
-        if (map.items[currentState.i][currentState.j] != '^') {
+        if (previousStates.items.len > 1) {
             map.items[currentState.i][currentState.j] = '#';
-            if (isGuardStuck(currentState, map.items, allocator)) {
+            if (isGuardStuck(previousStates.items[previousStates.items.len - 2], map.items, allocator)) {
                 loops += 1;
             }
             map.items[currentState.i][currentState.j] = '.';
@@ -134,6 +130,7 @@ pub fn main() !void {
             map.items[currentState.i][currentState.j] = '.';
             currentState.i -= 1;
         }
+        try previousStates.append(currentState);
         moveGuard(&currentState, map.items);
     }
     try stdout.print("{d}\n", .{loops});
