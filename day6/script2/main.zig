@@ -115,6 +115,7 @@ pub fn main() !void {
     }
 
     const startState: State = State{ .i = currentState.i, .j = currentState.j, .direction = .up };
+    var loops: i32 = 0;
     var possibleObstacles = std.ArrayList(Index).init(allocator);
     defer possibleObstacles.deinit();
 
@@ -124,7 +125,7 @@ pub fn main() !void {
         if (map.items[currentState.i][currentState.j] != '^') {
             map.items[currentState.i][currentState.j] = '#';
             if (isGuardStuck(startState, map.items, allocator)) {
-                try possibleObstacles.append(Index{ .i = currentState.i, .j = currentState.j });
+                loops += 1;
             }
             map.items[currentState.i][currentState.j] = '.';
         } else {
@@ -133,6 +134,5 @@ pub fn main() !void {
         }
         moveGuard(&currentState, map.items);
     }
-
-    try stdout.print("{any}\n", .{possibleObstacles.items});
+    try stdout.print("{d}\n", .{loops});
 }
