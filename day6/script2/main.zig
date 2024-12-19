@@ -58,12 +58,11 @@ fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) 
     defer visited.deinit();
 
     var steps: usize = 0;
-
     while (startState.i > 0 and startState.i < map.len - 1 and
         startState.j > 0 and startState.j < map[0].len - 1)
     {
-        if (visited.get(startState)) |lastStep| {
-            return (steps - lastStep) > 5;
+        if (visited.get(startState)) |laststep| {
+            return (steps - laststep) > 5;
         }
         visited.put(startState, steps) catch {
             return false;
@@ -79,7 +78,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
+    const file = try std.fs.cwd().openFile("test_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
