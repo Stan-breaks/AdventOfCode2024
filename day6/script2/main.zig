@@ -63,9 +63,9 @@ fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) 
         startState.j > 0 and startState.j < map[0].len - 1)
     {
         if (visited.get(startState)) |lastStep| {
-            return (steps - lastStep) > 3;
+            return (steps - lastStep) > 5;
         }
-        visited.put(startState, {}) catch {
+        visited.put(startState, steps) catch {
             return false;
         };
         moveGuard(&startState, map);
@@ -79,7 +79,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
