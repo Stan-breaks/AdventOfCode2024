@@ -54,19 +54,22 @@ fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) 
         .j = currentState.j,
         .direction = currentState.direction,
     };
-    var visited = std.AutoHashMap(State, void).init(allocator);
+    var visited = std.AutoHashMap(State, usize).init(allocator);
     defer visited.deinit();
+
+    var steps: usize = 0;
 
     while (startState.i > 0 and startState.i < map.len - 1 and
         startState.j > 0 and startState.j < map[0].len - 1)
     {
-        if (visited.contains(startState)) {
-            return true;
+        if (visited.get(startState)) |lastStep| {
+            return (steps - lastStep) > 3;
         }
         visited.put(startState, {}) catch {
             return false;
         };
         moveGuard(&startState, map);
+        steps += 1;
     }
     return false;
 }
@@ -100,7 +103,6 @@ pub fn main() !void {
         const mutableLine = try allocator.alloc(u8, line.len);
         @memcpy(mutableLine, line);
         try map.append(mutableLine);
-
         if (std.mem.indexOf(u8, line, "^")) |j| {
             currentState.i = lineIndex;
             currentState.j = j;
