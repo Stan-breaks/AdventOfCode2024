@@ -76,7 +76,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
+    const file = try std.fs.cwd().openFile("test_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -120,7 +120,8 @@ pub fn main() !void {
         try previousStates.append(currentState);
         moveGuard(&currentState, map.items);
     }
-    for (1..previousStates.items.len - 1) |i| {
+    try previousStates.append(currentState);
+    for (1..previousStates.items.len) |i| {
         const testState = previousStates.items[i - 1];
         map.items[previousStates.items[i].i][previousStates.items[i].j] = '#';
         if (isGuardStuck(testState, map.items, allocator)) {
@@ -130,5 +131,6 @@ pub fn main() !void {
         }
         map.items[previousStates.items[i].i][previousStates.items[i].j] = '.';
     }
+
     try stdout.print("{any}\n", .{possibleObstacles.count()});
 }
