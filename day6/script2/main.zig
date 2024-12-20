@@ -19,14 +19,16 @@ const State = struct {
 };
 
 fn moveGuard(currentState: *State, map: [][]u8) void {
-    const nextPos = getNextPosition(currentState.*);
+    var nextPos = getNextPosition(currentState.*);
     if (map[nextPos.i][nextPos.j] == '#') {
-        currentState.direction = getNextDirection(currentState.direction);
-        switch (currentState.direction) {
-            .up => currentState.i -= 1,
-            .right => currentState.j += 1,
-            .down => currentState.i += 1,
-            .left => currentState.j -= 1,
+        var turnCount: u8 = 0;
+        while (map[nextPos.i][nextPos.j] == '#' and turnCount < 4) : (turnCount += 1) {
+            currentState.direction = getNextDirection(currentState.direction);
+            nextPos = getNextPosition(currentState.*);
+        }
+        if (turnCount < 4) {
+            currentState.i = nextPos.i;
+            currentState.j = nextPos.j;
         }
     } else {
         currentState.i = nextPos.i;
@@ -80,7 +82,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
