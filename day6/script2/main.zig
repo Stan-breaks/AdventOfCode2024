@@ -19,12 +19,7 @@ const State = struct {
 };
 
 fn moveGuard(currentState: *State, map: [][]u8) void {
-    const nextPos = switch (currentState.direction) {
-        .up => Index{ .i = currentState.i - 1, .j = currentState.j },
-        .right => Index{ .i = currentState.i, .j = currentState.j + 1 },
-        .down => Index{ .i = currentState.i + 1, .j = currentState.j },
-        .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
-    };
+    const nextPos = getNextPosition(currentState.*);
     if (map[nextPos.i][nextPos.j] == '#') {
         currentState.direction = getNextDirection(currentState.direction);
         switch (currentState.direction) {
@@ -37,6 +32,15 @@ fn moveGuard(currentState: *State, map: [][]u8) void {
         currentState.i = nextPos.i;
         currentState.j = nextPos.j;
     }
+}
+
+fn getNextPosition(currentState: State) Index {
+    return switch (currentState.direction) {
+        .up => Index{ .i = currentState.i - 1, .j = currentState.j },
+        .right => Index{ .i = currentState.i, .j = currentState.j + 1 },
+        .down => Index{ .i = currentState.i + 1, .j = currentState.j },
+        .left => Index{ .i = currentState.i, .j = currentState.j - 1 },
+    };
 }
 
 fn getNextDirection(current: Direction) Direction {
@@ -54,21 +58,19 @@ fn isGuardStuck(currentState: State, map: [][]u8, allocator: std.mem.Allocator) 
         .j = currentState.j,
         .direction = currentState.direction,
     };
-    var visited = std.AutoHashMap(State, usize).init(allocator);
+    var visited = std.AutoHashMap(State, void).init(allocator);
     defer visited.deinit();
 
-    var steps: usize = 0;
     while (startState.i > 0 and startState.i < map.len - 1 and
         startState.j > 0 and startState.j < map[0].len - 1)
     {
-        if (visited.get(startState)) |laststep| {
-            return (steps - laststep) > 5;
+        if (visited.contains(startState)) {
+            return true;
         }
-        visited.put(startState, steps) catch {
+        visited.put(startState, {}) catch {
             return false;
         };
         moveGuard(&startState, map);
-        steps += 1;
     }
     return false;
 }
@@ -78,7 +80,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -112,13 +114,19 @@ pub fn main() !void {
     var previousStates = std.ArrayList(State).init(allocator);
     defer previousStates.deinit();
 
+    var seenPositions = std.AutoHashMap(Index, void).init(allocator);
+    defer seenPositions.deinit();
+
     var possibleObstacles = std.AutoHashMap(Index, void).init(allocator);
     defer possibleObstacles.deinit();
 
     while (currentState.i > 0 and currentState.i < map.items.len - 1 and
         currentState.j > 0 and currentState.j < map.items[0].len - 1)
     {
-        try previousStates.append(currentState);
+        if (!seenPositions.contains(Index{ .i = currentState.i, .j = currentState.j })) {
+            try previousStates.append(currentState);
+            try seenPositions.put(Index{ .i = currentState.i, .j = currentState.j }, {});
+        }
         moveGuard(&currentState, map.items);
     }
     try previousStates.append(currentState);
