@@ -17,13 +17,10 @@ fn tryAllResults(numbers: []i64, results: *std.ArrayList(i64), allocator: std.me
         try tryAllResults(right, &right_result, allocator);
         for (left_result.items) |left_val| {
             for (right_result.items) |right_val| {
-                try std.io.getStdOut().writer().print("num {d},num {d}\n", .{ left_val, right_val });
                 try results.append(left_val + right_val);
                 try results.append(left_val * right_val);
             }
         }
-
-        try std.io.getStdOut().writer().print("{d}\n", .{results.items});
     }
 }
 
