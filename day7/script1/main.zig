@@ -12,22 +12,15 @@ fn tryAllcombination(numbers: []i64, target: i64) bool {
 
     var i: usize = 0;
     while (i < total) : (i += 1) {
-        var totalVal: i64 = 0;
+        var totalVal: i64 = numbers[0];
         var j: u6 = 0;
         while (j < length) : (j += 1) {
             const bit: usize = ((i >> @intCast(length -% 1 -% j))) & 1;
-            if (j == 0) {
-                if (bit == 0) {
-                    totalVal = (numbers[0] + numbers[1]);
-                } else {
-                    totalVal = (numbers[0] * numbers[1]);
-                }
+
+            if (bit == 0) {
+                totalVal += (numbers[j + 1]);
             } else {
-                if (bit == 0) {
-                    totalVal += (numbers[j + 1]);
-                } else {
-                    totalVal *= (numbers[j + 1]);
-                }
+                totalVal *= (numbers[j + 1]);
             }
         }
         if (totalVal == target) {
