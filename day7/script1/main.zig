@@ -1,56 +1,37 @@
 const std = @import("std");
 
-fn tryAllResults(numbers: []i64, results: *std.ArrayList(i64), allocator: std.mem.Allocator) !void {
+fn tryAllcombination(numbers: []i64, target: i64) bool {
     if (numbers.len == 1) {
-        try results.append(numbers[0]);
+        return target == numbers[0];
     }
-    var i: usize = 0;
-    while (i < numbers.len) : (i += 1) {
-        const left = numbers[0..i];
-        const right = numbers[i + 1 ..];
-        var left_result = std.ArrayList(i64).init(allocator);
-        defer left_result.deinit();
-        var right_result = std.ArrayList(i64).init(allocator);
-        defer right_result.deinit();
+    if (numbers.len == 0) {
+        return false;
+    }
+    const length: usize = numbers.len - 1;
+    const total = @as(usize, 1) << @intCast(length);
 
-        try tryAllResults(left, &left_result, allocator);
-        try tryAllResults(right, &right_result, allocator);
-        for (left_result.items) |left_val| {
-            for (right_result.items) |right_val| {
-                try results.append(left_val + right_val);
-                try results.append(left_val * right_val);
+    var i: usize = 0;
+    while (i < total) : (i += 1) {
+        var totalVal: i64 = 0;
+        var j: u6 = 0;
+        while (j < length) : (j += 1) {
+            const bit: usize = ((i >> @intCast(length -% 1 -% j))) & 1;
+            if (j == 0) {
+                if (bit == 0) {
+                    totalVal = (numbers[0] + numbers[1]);
+                } else {
+                    totalVal = (numbers[0] * numbers[1]);
+                }
+            } else {
+                if (bit == 0) {
+                    totalVal += (numbers[j + 1]);
+                } else {
+                    totalVal *= (numbers[j + 1]);
+                }
             }
         }
-    }
-}
-
-fn tryAllcombination(numbers: []i64, target: i64, allocator: std.mem.Allocator) bool {
-    if (numbers.len == 1) {
-        return numbers[0] == target;
-    }
-    var i: usize = 0;
-    while (i < numbers.len) : (i += 1) {
-        const left = numbers[0..i];
-        const right = numbers[i + 1 ..];
-        var left_results = std.ArrayList(i64).init(allocator);
-        defer left_results.deinit();
-        var right_results = std.ArrayList(i64).init(allocator);
-        defer right_results.deinit();
-        tryAllResults(left, &left_results, allocator) catch {
-            return false;
-        };
-        tryAllResults(right, &right_results, allocator) catch {
-            return false;
-        };
-        for (left_results.items) |left_val| {
-            for (right_results.items) |right_val| {
-                if (left_val * right_val == target) {
-                    return true;
-                }
-                if (left_val + right_val == target) {
-                    return true;
-                }
-            }
+        if (totalVal == target) {
+            return true;
         }
     }
     return false;
@@ -61,7 +42,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -72,17 +53,17 @@ pub fn main() !void {
     var sum: i64 = 0;
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
     while (lineTokenizer.next()) |line| {
-        if (std.mem.indexOf(u8, line, ":")) |semiColonIndex| {
-            const target = try std.fmt.parseInt(i64, line[0..semiColonIndex], 10);
+        if (std.mem.indexOf(u8, line, ":")) |colonIndex| {
+            const target = try std.fmt.parseInt(i64, line[0..colonIndex], 10);
             var numbers = std.ArrayList(i64).init(allocator);
             defer numbers.deinit();
 
-            var numberTokenizer = std.mem.tokenize(u8, line[semiColonIndex + 1 ..], " ");
-            while (numberTokenizer.next()) |num| {
-                const number = try std.fmt.parseInt(i32, num, 10);
-                try numbers.append(number);
+            var numbersTokenizer = std.mem.tokenize(u8, line[colonIndex + 1 ..], " ");
+            while (numbersTokenizer.next()) |val| {
+                const num = try std.fmt.parseInt(i64, val, 10);
+                try numbers.append(num);
             }
-            if (tryAllcombination(numbers.items, target, allocator)) {
+            if (tryAllcombination(numbers.items, target)) {
                 sum += target;
             }
         }
