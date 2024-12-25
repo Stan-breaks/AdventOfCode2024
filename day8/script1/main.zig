@@ -6,7 +6,52 @@ const Frequency = struct {
     type: u8,
 };
 
-fn checkForFrequencies() i32 {}
+fn checkForFrequencies(map: [][]u8, current: Frequency, frequencies: *std.AutoHashMap(Frequency, void)) void {
+    var i = current.i + 1;
+    while (i < map.len) : (i += 1) {
+        var j: usize = 0;
+        while (j < map[i].len) : (j += 1) {
+            if (map[i][j] == current.type) {
+                const diffI = current.i - 1;
+                if (j < current.j) {
+                    if ((current.j + (current.j - j)) < map[i].len and @as(i32, current.i - diffI) > 0) {
+                        const antinode = Frequency{
+                            .j = current.j + (current.j - j),
+                            .i = current.i - diffI,
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                    if ((j - (current.j - j)) > 0 and i + diffI < map.len) {
+                        const antinode = Frequency{
+                            .j = j - (current.j - j),
+                            .i = i + diffI,
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                } else {
+                    if (@as(i32, current.j - (j - current.j)) > 0 and @as(i32, current.i - diffI) > 0) {
+                        const antinode = Frequency{
+                            .j = current.j - (j - current.j),
+                            .i = current.i - diffI,
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                    if (j + (j - current.j) < map[i].len and i + diffI < map.len) {
+                        const antinode = Frequency{
+                            .j = j + (j - current.j),
+                            .i = i + diffI,
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                }
+            }
+        }
+    }
+}
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -39,8 +84,14 @@ pub fn main() !void {
     for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
             if (map.items[i][j] != '.') {
-                try stdout.print("{c}", .{map.items[i][j]});
+                const current = Frequency{
+                    .i = i,
+                    .j = j,
+                    .type = map.items[i][j],
+                };
+                try checkForFrequencies(map, current, frequencies);
             }
         }
     }
+    try stdout.print("{d}\n", .{frequencies.count()});
 }
