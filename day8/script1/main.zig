@@ -3,11 +3,10 @@ const std = @import("std");
 const Frequency = struct {
     i: usize,
     j: usize,
-    type:u8,
+    type: u8,
 };
 
 fn checkForFrequencies() i32 {}
-
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -35,7 +34,7 @@ pub fn main() !void {
         @memcpy(mutableLine, line);
         try map.append(mutableLine);
     }
-    var frequencies = std.AutoHashMap(Index, u8).init(allocator);
+    var frequencies = std.AutoHashMap(Frequency, void).init(allocator);
     defer frequencies.deinit();
     for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
