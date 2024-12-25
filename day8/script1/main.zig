@@ -18,7 +18,7 @@ fn checkForFrequencies(map: [][]u8, current: Frequency, frequencies: *std.AutoHa
 
                 if (j < current.j) {
                     const mirror_dist = curr_j - pos_j;
-                    if (curr_j + mirror_dist >= 0 and curr_j + mirror_dist < @as(i64, @intCast(map[i].len)) and
+                    if (curr_j + mirror_dist < @as(i64, @intCast(map[i].len)) and
                         current.i >= @as(usize, @intCast(@abs(diffI))))
                     {
                         const antinode = Frequency{
