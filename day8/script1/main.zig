@@ -14,7 +14,7 @@ fn checkForFrequencies(map: [][]u8, current: Frequency, frequencies: *std.AutoHa
             if (map[i][j] == current.type) {
                 const diffI = current.i - 1;
                 if (j < current.j) {
-                    if ((current.j + (current.j - j)) < map[i].len and @as(i32, current.i - diffI) > 0) {
+                    if ((current.j + (current.j - j)) < map[i].len and @as(i32, current.i) - diffI > 0) {
                         const antinode = Frequency{
                             .j = current.j + (current.j - j),
                             .i = current.i - diffI,
@@ -89,7 +89,7 @@ pub fn main() !void {
                     .j = j,
                     .type = map.items[i][j],
                 };
-                try checkForFrequencies(map, current, frequencies);
+                try checkForFrequencies(map.items, current, &frequencies);
             }
         }
     }
