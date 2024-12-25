@@ -1,5 +1,14 @@
 const std = @import("std");
 
+const Frequency = struct {
+    i: usize,
+    j: usize,
+    type:u8,
+};
+
+fn checkForFrequencies() i32 {}
+
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -8,8 +17,10 @@ pub fn main() !void {
     const file = try std.fs.cwd().openFile("test_input.txt", .{});
     defer file.close();
 
-    const content = file.readToEndAlloc(allocator, 1024 * 1024);
+    const content = try file.readToEndAlloc(allocator, 1024 * 1024);
     defer allocator.free(content);
+
+    const stdout = std.io.getStdOut().writer();
 
     var map = std.ArrayList([]u8).init(allocator);
     defer {
@@ -20,8 +31,17 @@ pub fn main() !void {
     }
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
     while (lineTokenizer.next()) |line| {
-        const mutableLine = allocator.alloc(u8, line.len);
+        const mutableLine = try allocator.alloc(u8, line.len);
         @memcpy(mutableLine, line);
         try map.append(mutableLine);
+    }
+    var frequencies = std.AutoHashMap(Index, u8).init(allocator);
+    defer frequencies.deinit();
+    for (0..map.items.len) |i| {
+        for (0..map.items[i].len) |j| {
+            if (map.items[i][j] != '.') {
+                try stdout.print("{c}", .{map.items[i][j]});
+            }
+        }
     }
 }
