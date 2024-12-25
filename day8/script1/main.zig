@@ -6,43 +6,52 @@ const Frequency = struct {
     type: u8,
 };
 
-fn checkForFrequencies(map: [][]u8, current: Frequency, frequencies: *std.AutoHashMap(Frequency, void)) void {
+fn checkForFrequencies(map: [][]u8, current: Frequency, frequencies: *std.AutoHashMap(Frequency, void)) !void {
     var i = current.i + 1;
     while (i < map.len) : (i += 1) {
         var j: usize = 0;
         while (j < map[i].len) : (j += 1) {
             if (map[i][j] == current.type) {
-                const diffI = current.i - 1;
+                const diffI: i64 = @as(i64, @intCast(current.i)) - @as(i64, @intCast(i));
+                const curr_j: i64 = @as(i64, @intCast(current.j));
+                const pos_j: i64 = @as(i64, @intCast(j));
+
                 if (j < current.j) {
-                    if ((current.j + (current.j - j)) < map[i].len and @as(i32, current.i) - diffI > 0) {
+                    const mirror_dist = curr_j - pos_j;
+                    if (curr_j + mirror_dist >= 0 and curr_j + mirror_dist < @as(i64, @intCast(map[i].len)) and
+                        current.i >= @as(usize, @intCast(@abs(diffI))))
+                    {
                         const antinode = Frequency{
-                            .j = current.j + (current.j - j),
-                            .i = current.i - diffI,
+                            .j = @as(usize, @intCast(curr_j + mirror_dist)),
+                            .i = current.i - @as(usize, @intCast(@abs(diffI))),
                             .type = '#',
                         };
                         try frequencies.put(antinode, {});
                     }
-                    if ((j - (current.j - j)) > 0 and i + diffI < map.len) {
+                    if (pos_j >= mirror_dist and i + @as(usize, @intCast(@abs(diffI))) < map.len) {
                         const antinode = Frequency{
-                            .j = j - (current.j - j),
-                            .i = i + diffI,
+                            .j = @as(usize, @intCast(pos_j - mirror_dist)),
+                            .i = i + @as(usize, @intCast(@abs(diffI))),
                             .type = '#',
                         };
                         try frequencies.put(antinode, {});
                     }
                 } else {
-                    if (@as(i32, current.j - (j - current.j)) > 0 and @as(i32, current.i - diffI) > 0) {
+                    const mirror_dist = pos_j - curr_j;
+                    if (curr_j >= mirror_dist and current.i >= @as(usize, @intCast(@abs(diffI)))) {
                         const antinode = Frequency{
-                            .j = current.j - (j - current.j),
-                            .i = current.i - diffI,
+                            .j = @as(usize, @intCast(curr_j - mirror_dist)),
+                            .i = current.i - @as(usize, @intCast(@abs(diffI))),
                             .type = '#',
                         };
                         try frequencies.put(antinode, {});
                     }
-                    if (j + (j - current.j) < map[i].len and i + diffI < map.len) {
+                    if (pos_j + mirror_dist < @as(i64, @intCast(map[i].len)) and
+                        i + @as(usize, @intCast(@abs(diffI))) < map.len)
+                    {
                         const antinode = Frequency{
-                            .j = j + (j - current.j),
-                            .i = i + diffI,
+                            .j = @as(usize, @intCast(pos_j + mirror_dist)),
+                            .i = i + @as(usize, @intCast(@abs(diffI))),
                             .type = '#',
                         };
                         try frequencies.put(antinode, {});
@@ -58,7 +67,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
