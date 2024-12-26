@@ -17,15 +17,7 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
                     if (current.j + (current.j - j) < map[i].len and current.i >= diffI) {
                         var innerI: i32 = @intCast(current.i - diffI);
                         var innerJ: i32 = @intCast(current.j + (current.j - j));
-                        if (innerI == 0) {
-                            const antinode = Frequency{
-                                .i = @as(usize, @intCast(innerI)),
-                                .j = @as(usize, @intCast(innerJ)),
-                                .type = '#',
-                            };
-                            try frequencies.put(antinode, {});
-                        }
-                        while (innerI > 0 and innerJ < map[i].len) {
+                        while (innerI >= 0 and innerJ < map[i].len) {
                             const antinode = Frequency{
                                 .i = @as(usize, @intCast(innerI)),
                                 .j = @as(usize, @intCast(innerJ)),
@@ -39,15 +31,7 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
                     if (j >= (current.j - j) and i + diffI < map.len) {
                         var innerI: i32 = @intCast(i + diffI);
                         var innerJ: i32 = @intCast(j - (current.j - j));
-                        if (innerJ == 0) {
-                            const antinode = Frequency{
-                                .i = @as(usize, @intCast(innerI)),
-                                .j = @as(usize, @intCast(innerJ)),
-                                .type = '#',
-                            };
-                            try frequencies.put(antinode, {});
-                        }
-                        while (innerI < map.len and innerJ > 0) {
+                        while (innerI < map.len and innerJ >= 0) {
                             const antinode = Frequency{
                                 .i = @as(usize, @intCast(innerI)),
                                 .j = @as(usize, @intCast(innerJ)),
@@ -62,22 +46,13 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
                     if (current.j >= (j - current.j) and current.i >= diffI) {
                         var innerI: i32 = @intCast(current.i - diffI);
                         var innerJ: i32 = @intCast(current.j - (j - current.j));
-                        if (innerI == 0 or innerJ == 0) {
+                        while (innerI >= 0 and innerJ >= 0) {
                             const antinode = Frequency{
                                 .i = @as(usize, @intCast(innerI)),
                                 .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
-                        }
-                        while (innerI > 0 and innerJ > 0) {
-                            const antinode = Frequency{
-                                .i = @as(usize, @intCast(innerI)),
-                                .j = @as(usize, @intCast(innerJ)),
-                                .type = '#',
-                            };
-                            try frequencies.put(antinode, {});
-
                             innerI -= @as(i32, @intCast(diffI));
                             innerJ -= @as(i32, @intCast(j - current.j));
                         }
