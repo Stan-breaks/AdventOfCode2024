@@ -11,7 +11,44 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
     while (i < map.len) : (i += 1) {
         var j: usize = 0;
         while (j < map[i].len) : (j += 1) {
-            if (map[i][j] == current.type) {}
+            if (map[i][j] == current.type) {
+                const diffI = i - current.i;
+                if (current.j > j) {
+                    if (current.j + (current.j - j) < map[i].len and current.i >= diffI) {
+                        const antinode = Frequency{
+                            .i = current.i - diffI,
+                            .j = current.j + (current.j - j),
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                    if (j >= (current.j - j) and i + diffI < map.len) {
+                        const antinode = Frequency{
+                            .i = i + diffI,
+                            .j = j - (current.j - j),
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                } else {
+                    if (current.j >= (j - current.j) and current.i >= diffI) {
+                        const antinode = Frequency{
+                            .i = current.i - diffI,
+                            .j = current.j - (j - current.j),
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                    if (j + (j - current.j) < map[i].len and i + diffI < map.len) {
+                        const antinode = Frequency{
+                            .i = i + diffI,
+                            .j = j + (j - current.j),
+                            .type = '#',
+                        };
+                        try frequencies.put(antinode, {});
+                    }
+                }
+            }
         }
     }
     frequencies.count();
@@ -45,11 +82,11 @@ pub fn main() !void {
     }
     var frequencies = std.AutoHashMap(Frequency, void).init(allocator);
     defer frequencies.deinit();
-    for (0..map.items) |i| {
+    for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
             if (map.items[i][j] != '.') {
                 const current = Frequency{ .i = i, .j = j, .type = map.items[i][j] };
-                checkForFrequencies(map, frequencies, current);
+                try checkForFrequencies(map.items, &frequencies, current);
             }
         }
     }
