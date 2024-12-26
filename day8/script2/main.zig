@@ -15,37 +15,78 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
                 const diffI = i - current.i;
                 if (current.j > j) {
                     if (current.j + (current.j - j) < map[i].len and current.i >= diffI) {
-                        const antinode = Frequency{
-                            .i = current.i - diffI,
-                            .j = current.j + (current.j - j),
-                            .type = '#',
-                        };
-                        try frequencies.put(antinode, {});
+                        var innerI: usize = current.i - diffI;
+                        var innerJ: usize = current.j + (current.j - j);
+                        if (innerI == 0) {
+                            const antinode = Frequency{
+                                .i = innerI,
+                                .j = innerJ,
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+                        }
+                        while (innerI > 0 and innerJ < map[i].len) {
+                            const antinode = Frequency{
+                                .i = innerI,
+                                .j = innerJ,
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+                            innerI -= diffI;
+                            innerJ += (current.j - j);
+                        }
                     }
                     if (j >= (current.j - j) and i + diffI < map.len) {
-                        const antinode = Frequency{
-                            .i = i + diffI,
-                            .j = j - (current.j - j),
-                            .type = '#',
-                        };
-                        try frequencies.put(antinode, {});
+                        var innerI: usize = i + diffI;
+                        var innerJ: usize = j - (current.j - j);
+                        if (innerJ == 0) {
+                            const antinode = Frequency{
+                                .i = innerI,
+                                .j = innerJ,
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+                        }
+                        while (innerI < map.len and innerJ > 0) {
+                            const antinode = Frequency{
+                                .i = innerI,
+                                .j = innerJ,
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+                            innerI += diffI;
+                            innerJ -= (current.j - j);
+                        }
                     }
                 } else {
                     if (current.j >= (j - current.j) and current.i >= diffI) {
-                        const antinode = Frequency{
-                            .i = current.i - diffI,
-                            .j = current.j - (j - current.j),
-                            .type = '#',
-                        };
-                        try frequencies.put(antinode, {});
+                        var innerI: usize = current.i - diffI;
+                        var innerJ: usize = current.j - (j - current.j);
+                        while (innerI > 0 and innerJ > 0) {
+                            const antinode = Frequency{
+                                .i = innerI,
+                                .j = innerJ,
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+
+                            innerI -= diffI;
+                            innerJ -= (j - current.j);
+                        }
                     }
                     if (j + (j - current.j) < map[i].len and i + diffI < map.len) {
-                        const antinode = Frequency{
-                            .i = i + diffI,
-                            .j = j + (j - current.j),
-                            .type = '#',
-                        };
-                        try frequencies.put(antinode, {});
+                        var innerI: usize = i + diffI;
+                        var innerJ: usize = j + (j - current.j);
+                        while (innerI < map.len and innerJ < map[i].len) {
+                            const antinode = Frequency{
+                                .i = innerI,
+                                .j = innerJ,
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+                            innerI += diffI;
+                            innerJ += (j - current.j);
+                        }
                     }
                 }
             }
@@ -58,7 +99,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
+    const file = try std.fs.cwd().openFile("test_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
