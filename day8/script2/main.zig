@@ -62,6 +62,14 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
                     if (current.j >= (j - current.j) and current.i >= diffI) {
                         var innerI: i32 = @intCast(current.i - diffI);
                         var innerJ: i32 = @intCast(current.j - (j - current.j));
+                        if (innerI == 0 or innerJ == 0) {
+                            const antinode = Frequency{
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
+                                .type = '#',
+                            };
+                            try frequencies.put(antinode, {});
+                        }
                         while (innerI > 0 and innerJ > 0) {
                             const antinode = Frequency{
                                 .i = @as(usize, @intCast(innerI)),
