@@ -75,6 +75,12 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
             }
         }
     }
+    const antinode = Frequency{
+        .i = current.i,
+        .j = current.j,
+        .type = '#',
+    };
+    try frequencies.put(antinode, {});
 }
 
 pub fn main() !void {
@@ -82,7 +88,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -113,5 +119,9 @@ pub fn main() !void {
             }
         }
     }
+    // var frequencyIterator = frequencies.iterator();
+    // while (frequencyIterator.next()) |item| {
+    //     try stdout.print("{any}\n", .{item.key_ptr});
+    // }
     try stdout.print("{d}\n", .{frequencies.count()});
 }
