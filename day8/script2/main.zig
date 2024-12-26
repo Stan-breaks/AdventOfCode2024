@@ -15,77 +15,77 @@ fn checkForFrequencies(map: [][]u8, frequencies: *std.AutoHashMap(Frequency, voi
                 const diffI = i - current.i;
                 if (current.j > j) {
                     if (current.j + (current.j - j) < map[i].len and current.i >= diffI) {
-                        var innerI: usize = current.i - diffI;
-                        var innerJ: usize = current.j + (current.j - j);
+                        var innerI: i32 = @intCast(current.i - diffI);
+                        var innerJ: i32 = @intCast(current.j + (current.j - j));
                         if (innerI == 0) {
                             const antinode = Frequency{
-                                .i = innerI,
-                                .j = innerJ,
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
                         }
                         while (innerI > 0 and innerJ < map[i].len) {
                             const antinode = Frequency{
-                                .i = innerI,
-                                .j = innerJ,
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
-                            innerI -= diffI;
-                            innerJ += (current.j - j);
+                            innerI -= @as(i32, @intCast(diffI));
+                            innerJ += @as(i32, @intCast((current.j - j)));
                         }
                     }
                     if (j >= (current.j - j) and i + diffI < map.len) {
-                        var innerI: usize = i + diffI;
-                        var innerJ: usize = j - (current.j - j);
+                        var innerI: i32 = @intCast(i + diffI);
+                        var innerJ: i32 = @intCast(j - (current.j - j));
                         if (innerJ == 0) {
                             const antinode = Frequency{
-                                .i = innerI,
-                                .j = innerJ,
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
                         }
                         while (innerI < map.len and innerJ > 0) {
                             const antinode = Frequency{
-                                .i = innerI,
-                                .j = innerJ,
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
-                            innerI += diffI;
-                            innerJ -= (current.j - j);
+                            innerI += @as(i32, @intCast(diffI));
+                            innerJ -= @as(i32, @intCast(current.j - j));
                         }
                     }
                 } else {
                     if (current.j >= (j - current.j) and current.i >= diffI) {
-                        var innerI: usize = current.i - diffI;
-                        var innerJ: usize = current.j - (j - current.j);
+                        var innerI: i32 = @intCast(current.i - diffI);
+                        var innerJ: i32 = @intCast(current.j - (j - current.j));
                         while (innerI > 0 and innerJ > 0) {
                             const antinode = Frequency{
-                                .i = innerI,
-                                .j = innerJ,
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
 
-                            innerI -= diffI;
-                            innerJ -= (j - current.j);
+                            innerI -= @as(i32, @intCast(diffI));
+                            innerJ -= @as(i32, @intCast(j - current.j));
                         }
                     }
                     if (j + (j - current.j) < map[i].len and i + diffI < map.len) {
-                        var innerI: usize = i + diffI;
-                        var innerJ: usize = j + (j - current.j);
+                        var innerI: i32 = @intCast(i + diffI);
+                        var innerJ: i32 = @intCast(j + (j - current.j));
                         while (innerI < map.len and innerJ < map[i].len) {
                             const antinode = Frequency{
-                                .i = innerI,
-                                .j = innerJ,
+                                .i = @as(usize, @intCast(innerI)),
+                                .j = @as(usize, @intCast(innerJ)),
                                 .type = '#',
                             };
                             try frequencies.put(antinode, {});
-                            innerI += diffI;
-                            innerJ += (j - current.j);
+                            innerI += @as(i32, @intCast(diffI));
+                            innerJ += @as(i32, @intCast(j - current.j));
                         }
                     }
                 }
