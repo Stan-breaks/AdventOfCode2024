@@ -28,5 +28,7 @@ I'll update this section as I progress through the challenge.
 | 6   |  :star:  |  :star:  |
 | 7   |  :star:  |  :star:  |
 | 8   |  :star:  |  :star:  |
+| 9   |          |          |
+| 10  |          |          |
 | ... |          |          |
 | 25  |          |          |
