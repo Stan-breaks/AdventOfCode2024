@@ -5,7 +5,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -36,5 +36,26 @@ pub fn main() !void {
             }
         }
     }
-    try stdout.print("{s}\n", .{arr.items});
+    var left: usize = 0;
+    var right: usize = arr.items.len - 1;
+    while (left < right) {
+        if (arr.items[left] == '.') {
+            arr.items[left] = arr.items[right];
+            arr.items[right] = '.';
+            right -= 1;
+        } else {
+            left += 1;
+        }
+    }
+
+    var sum: i32 = 0;
+    for (0..arr.items.len) |i| {
+        if (arr.items[i] != '.') {
+            const num: usize = @intCast(arr.items[i]);
+            sum += @intCast(i * (num - 48));
+        } else {
+            break;
+        }
+    }
+    try stdout.print("{d}\n", .{sum});
 }
