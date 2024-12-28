@@ -5,7 +5,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -64,20 +64,19 @@ pub fn main() !void {
             var currentGapStart: ?usize = null;
             var currentGapLenght: usize = 0;
             i = 0;
-            while (i < arr.items.len) : (i += 1) {
+            while (i < start) : (i += 1) {
                 if (std.mem.eql(u8, arr.items[i], ".")) {
                     if (currentGapStart == null) currentGapStart = i;
+                    currentGapLenght += 1;
                     if (currentGapLenght >= fileLenght) {
                         bestGapStart = currentGapStart;
                         break;
                     }
-                    currentGapLenght += 1;
                 } else {
                     currentGapStart = null;
                     currentGapLenght = 0;
                 }
             }
-
             if (bestGapStart) |gapStart| {
                 var j: usize = 0;
                 while (j < fileLenght) : (j += 1) {
@@ -94,8 +93,6 @@ pub fn main() !void {
         if (!std.mem.eql(u8, arr.items[i], ".")) {
             const num = try std.fmt.parseInt(i64, arr.items[i], 10);
             sum += (@as(i64, @intCast(i)) * num);
-        } else {
-            break;
         }
     }
     try stdout.print("{d}\n", .{sum});
