@@ -22,6 +22,7 @@ pub fn main() !void {
     }
 
     var id: i32 = 0;
+    var maxId: i32 = 0;
     for (0..content.len - 1) |i| {
         if (i % 2 == 0) {
             const size: usize = @intCast(content[i] - '0');
@@ -30,6 +31,7 @@ pub fn main() !void {
                     const str = try std.fmt.allocPrint(allocator, "{}", .{id});
                     try arr.append(str);
                 }
+                maxId = id;
                 id += 1;
             }
         } else {
@@ -43,18 +45,47 @@ pub fn main() !void {
         }
     }
 
-    try stdout.print("{s}\n", .{arr.items});
-    var left: usize = 0;
-    var right: usize = arr.items.len - 1;
-    while (left < right) {
-        if (std.mem.eql(u8, arr.items[left], ".")) {
-            const dot = arr.items[left];
-            const num = arr.items[right];
-            arr.items[left] = num;
-            arr.items[right] = dot;
-            right -= 1;
-        } else {
-            left += 1;
+    var currentId = maxId;
+    while (currentId >= 0) : (currentId -= 1) {
+        const idStr = try std.fmt.allocPrint(allocator, "{}", .{currentId});
+        defer allocator.free(idStr);
+        var fileStart: ?usize = null;
+        var fileLenght: usize = 0;
+        var i: usize = 0;
+        while (i < arr.items.len) : (i += 1) {
+            if (std.mem.eql(u8, arr.items[i], idStr)) {
+                if (fileStart == null) fileStart = i;
+                fileLenght += 1;
+            }
+        }
+
+        if (fileStart) |start| {
+            var bestGapStart: ?usize = null;
+            var currentGapStart: ?usize = null;
+            var currentGapLenght: usize = 0;
+            i = 0;
+            while (i < arr.items.len) : (i += 1) {
+                if (std.mem.eql(u8, arr.items[i], ".")) {
+                    if (currentGapStart == null) currentGapStart = i;
+                    if (currentGapLenght >= fileLenght) {
+                        bestGapStart = currentGapStart;
+                        break;
+                    }
+                    currentGapLenght += 1;
+                } else {
+                    currentGapStart = null;
+                    currentGapLenght = 0;
+                }
+            }
+
+            if (bestGapStart) |gapStart| {
+                var j: usize = 0;
+                while (j < fileLenght) : (j += 1) {
+                    const temp = arr.items[start + j];
+                    arr.items[start + j] = arr.items[gapStart + j];
+                    arr.items[gapStart + j] = temp;
+                }
+            }
         }
     }
 
