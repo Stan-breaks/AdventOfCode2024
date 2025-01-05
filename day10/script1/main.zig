@@ -7,27 +7,32 @@ const Position = struct {
 };
 
 fn findTailHead(map: [][]u8, num: Position) bool {
-    var current = Position{ .i = num.i, .j = num.j, .value = num.value };
-    while (current.i > -1 and current.i < map.len and current.j > -1 and current.j < map[current.i].len) {
-        if (current.value == 9) {
-            return true;
-        }
-        if (current.i > 0 and map[current.i - 1][current.j] == current.value + 1) {
-            current.i -= 1;
-            current.value += 1;
-        } else if (current.j > 0 and map[current.i][current.j - 1] == current.value + 1) {
-            current.j -= 1;
-            current.value += 1;
-        } else if (current.i < map.len - 1 and map[current.i + 1][current.j] == current.value + 1) {
-            current.i += 1;
-            current.value += 1;
-        } else if (current.j < map[current.i].len - 1 and map[current.i][current.j + 1] == current.value + 1) {
-            current.j += 1;
-            current.value += 1;
-        } else {
+    var i: usize = num.i;
+    var j: usize = num.j;
+    var value: usize = num.value;
+    while (true) {
+        std.io.getStdOut().writer().print("i:{d},j:{d},value:{d}\n", .{ i, j, value }) catch {
             return false;
+        };
+        if (value == 9) {
+            return true;
+        } else if (i > 0 and map[i - 1][j] == value + 1) {
+            i -= 1;
+            value += 1;
+        } else if (j > 0 and map[i][j - 1] == value + 1) {
+            j -= 1;
+            value += 1;
+        } else if (i < map.len - 1 and map[i + 1][j] == value + 1) {
+            i += 1;
+            value += 1;
+        } else if (j < map[i].len - 1 and map[i][j + 1] == value + 1) {
+            j += 1;
+            value += 1;
+        } else {
+            break;
         }
     }
+
     return false;
 }
 
