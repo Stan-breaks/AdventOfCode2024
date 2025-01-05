@@ -11,9 +11,7 @@ fn findTailHead(map: [][]u8, num: Position) bool {
     var j: usize = num.j;
     var value: u8 = '0';
     while (true) {
-        if (value == '9') {
-            return true;
-        } else if (i > 0 and map[i - 1][j] == value + 1) {
+        if (i > 0 and map[i - 1][j] == value + 1) {
             i -= 1;
             value += 1;
         } else if (j > 0 and map[i][j - 1] == value + 1) {
@@ -29,7 +27,9 @@ fn findTailHead(map: [][]u8, num: Position) bool {
             break;
         }
     }
-
+    if (value == '9') {
+        return true;
+    }
     return false;
 }
 
