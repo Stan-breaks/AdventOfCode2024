@@ -11,9 +11,6 @@ fn findTailHead(map: [][]u8, num: Position) bool {
     var j: usize = num.j;
     var value: usize = num.value;
     while (true) {
-        std.io.getStdOut().writer().print("i:{d},j:{d},value:{d}\n", .{ i, j, value }) catch {
-            return false;
-        };
         if (value == 9) {
             return true;
         } else if (i > 0 and map[i - 1][j] == value + 1) {
