@@ -3,15 +3,15 @@ const std = @import("std");
 const Position = struct {
     i: usize,
     j: usize,
-    value: usize,
+    value: u8,
 };
 
 fn findTailHead(map: [][]u8, num: Position) bool {
     var i: usize = num.i;
     var j: usize = num.j;
-    var value: usize = num.value;
+    var value: u8 = '0';
     while (true) {
-        if (value == 9) {
+        if (value == '9') {
             return true;
         } else if (i > 0 and map[i - 1][j] == value + 1) {
             i -= 1;
@@ -62,7 +62,7 @@ pub fn main() !void {
     for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
             if (map.items[i][j] == '0') {
-                if (findTailHead(map.items, Position{ .i = i, .j = j, .value = 0 })) {
+                if (findTailHead(map.items, Position{ .i = i, .j = j, .value = '0' })) {
                     result += 1;
                 }
             }
