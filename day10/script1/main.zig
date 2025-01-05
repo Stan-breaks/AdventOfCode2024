@@ -6,13 +6,6 @@ const Position = struct {
     value: usize,
 };
 
-const directions = [_][2]i32{
-    {-1, 0},  // up
-    {0, -1},  // left
-    {1, 0},   // down
-    {0, 1},   // right
-};
-
 fn findTailHead(map: [][]u8, num: Position) bool {
     var current = Position{ .i = num.i, .j = num.j, .value = num.value };
     while (current.i > -1 and current.i < map.len and current.j > -1 and current.j < map[current.i].len) {
@@ -67,11 +60,11 @@ pub fn main() !void {
     for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
             if (map.items[i][j] == '0') {
-                if (findTailHead(map.items, Position{ .i = i, .j = j, .value = '0' })) {
+                if (findTailHead(map.items, Position{ .i = i, .j = j, .value = 0 })) {
                     result += 1;
                 }
             }
         }
     }
-    try stdout.print("tailheads: {d}", .{result});
+    try stdout.print("tailheads: {d}\n", .{result});
 }
