@@ -32,7 +32,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -49,9 +49,9 @@ pub fn main() !void {
     }
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
     while (lineTokenizer.next()) |line| {
-        const mutableLine = allocator.alloc(u8, line.len);
+        const mutableLine = try allocator.alloc(u8, line.len);
         @memcpy(mutableLine, line);
-        map.append(mutableLine);
+        try map.append(mutableLine);
     }
     var result: i32 = 0;
     for (0..map.items.len) |i| {
