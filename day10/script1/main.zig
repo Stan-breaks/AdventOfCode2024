@@ -7,6 +7,8 @@ const Position = struct {
 };
 
 fn findTailHead(map: [][]u8, num: Position) bool {
+
+    //find the tails starting from zero to nine
     var i: usize = num.i;
     var j: usize = num.j;
     var value: u8 = '0';
@@ -28,6 +30,9 @@ fn findTailHead(map: [][]u8, num: Position) bool {
         }
     }
     if (value == '9') {
+        std.io.getStdOut().writer().print("i:{d},j:{d},value:{c}\n", .{ num.i, num.j, num.value }) catch {
+            return false;
+        };
         return true;
     }
     return false;
