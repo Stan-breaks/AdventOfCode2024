@@ -6,36 +6,28 @@ const Position = struct {
     value: u8,
 };
 
-fn findTailHead(map: [][]u8, num: Position) bool {
-
-    //find the tails starting from zero to nine
-    var i: usize = num.i;
-    var j: usize = num.j;
-    var value: u8 = '0';
-    while (true) {
-        if (i > 0 and map[i - 1][j] == value + 1) {
-            i -= 1;
-            value += 1;
-        } else if (j > 0 and map[i][j - 1] == value + 1) {
-            j -= 1;
-            value += 1;
-        } else if (i < map.len - 1 and map[i + 1][j] == value + 1) {
-            i += 1;
-            value += 1;
-        } else if (j < map[i].len - 1 and map[i][j + 1] == value + 1) {
-            j += 1;
-            value += 1;
-        } else {
-            break;
+fn findPath(map: [][]u8, pos: Position, visited: *std.AutoHashMap(u64, void)) i32 {
+    if (pos.value == '9') {
+        return 1;
+    }
+    const key = @as(u64, pos.i) << 32 | pos.j;
+    if (visited.contains(key)) return 0;
+    visited.put(key, {}) catch return 0;
+    const moves = [_][2]i32{ .{ 1, 0 }, .{ 0, 1 }, .{ -1, 0 }, .{ 0, -1 } };
+    var totalPath: i32 = 0;
+    for (moves) |move| {
+        const intI = @as(i32, @intCast(pos.i)) + move[0];
+        const intJ = @as(i32, @intCast(pos.j)) + move[1];
+        if (intI >= 0 and intJ >= 0 and intI < map.len and intJ < map[0].len and map[@intCast(intI)][@intCast(intJ)] == pos.value + 1) {
+            const newPos = Position{
+                .i = @intCast(intI),
+                .j = @intCast(intJ),
+                .value = pos.value + 1,
+            };
+            totalPath += findPath(map, newPos, visited);
         }
     }
-    if (value == '9') {
-        std.io.getStdOut().writer().print("i:{d},j:{d},value:{c}\n", .{ num.i, num.j, num.value }) catch {
-            return false;
-        };
-        return true;
-    }
-    return false;
+    return totalPath;
 }
 
 pub fn main() !void {
@@ -57,6 +49,10 @@ pub fn main() !void {
         }
         map.deinit();
     }
+
+    var visited = std.AutoHashMap(u64, void).init(allocator);
+    defer visited.deinit();
+
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
     while (lineTokenizer.next()) |line| {
         const mutableLine = try allocator.alloc(u8, line.len);
@@ -67,8 +63,11 @@ pub fn main() !void {
     for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
             if (map.items[i][j] == '0') {
-                if (findTailHead(map.items, Position{ .i = i, .j = j, .value = '0' })) {
-                    result += 1;
+                visited.clearRetainingCapacity();
+                const path = findPath(map.items, Position{ .i = i, .j = j, .value = '0' }, &visited);
+                if (path > 0) {
+                    try stdout.print("{d}\n", .{path});
+                    result += path;
                 }
             }
         }
