@@ -10,4 +10,18 @@ pub fn main() !void {
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
     defer allocator.free(content);
+
+    var map = std.ArrayList([]u8).init(allocator);
+    defer {
+        for (map.items) |item| {
+            allocator.free(item);
+        }
+        map.deinit();
+    }
+    var lineTokenizer = std.mem.tokenize(u8, content, "\n");
+    while (lineTokenizer.next()) |line| {
+        const mutableLine = allocator.alloc(u8, line.len);
+        @memcpy(mutableLine, line);
+        map.append(mutableLine);
+    }
 }
