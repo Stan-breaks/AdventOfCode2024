@@ -6,8 +6,11 @@ const Position = struct {
     value: u8,
 };
 
-fn findPath(map: [][]u8, pos: Position, visited: *std.AutoHashMap(u64, void)) i32 {
+fn findPath(map: [][]u8, pos: Position, visited: *std.AutoHashMap(u64, void), peaks: *std.AutoHashMap(u64, void)) i32 {
     if (pos.value == '9') {
+        const peak = @as(u64, pos.i) << 32 | pos.j;
+        if (peaks.contains(peak)) return 0;
+        peaks.put(peak, {}) catch return 0;
         return 1;
     }
     const key = @as(u64, pos.i) << 32 | pos.j;
@@ -24,7 +27,7 @@ fn findPath(map: [][]u8, pos: Position, visited: *std.AutoHashMap(u64, void)) i3
                 .j = @intCast(intJ),
                 .value = pos.value + 1,
             };
-            totalPath += findPath(map, newPos, visited);
+            totalPath += findPath(map, newPos, visited, peaks);
         }
     }
     return totalPath;
@@ -35,7 +38,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -53,6 +56,9 @@ pub fn main() !void {
     var visited = std.AutoHashMap(u64, void).init(allocator);
     defer visited.deinit();
 
+    var peaks = std.AutoHashMap(u64, void).init(allocator);
+    defer peaks.deinit();
+
     var lineTokenizer = std.mem.tokenize(u8, content, "\n");
     while (lineTokenizer.next()) |line| {
         const mutableLine = try allocator.alloc(u8, line.len);
@@ -63,10 +69,10 @@ pub fn main() !void {
     for (0..map.items.len) |i| {
         for (0..map.items[i].len) |j| {
             if (map.items[i][j] == '0') {
+                peaks.clearRetainingCapacity();
                 visited.clearRetainingCapacity();
-                const path = findPath(map.items, Position{ .i = i, .j = j, .value = '0' }, &visited);
+                const path = findPath(map.items, Position{ .i = i, .j = j, .value = '0' }, &visited, &peaks);
                 if (path > 0) {
-                    try stdout.print("{d}\n", .{path});
                     result += path;
                 }
             }
