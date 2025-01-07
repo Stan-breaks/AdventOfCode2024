@@ -8,15 +8,23 @@ fn blink(arr: []i64, allocator: std.mem.Allocator) std.ArrayList(i64) {
         defer allocator.free(str);
         if (item == 0) {
             result.append(1) catch return result;
-        } else if (str.len % 2 == 0) {
-            const num1 = std.fmt.parseInt(i64, str[0 .. str.len / 2], 10) catch return result;
-            const num2 = std.fmt.parseInt(i64, str[str.len / 2 ..], 10) catch return result;
-            result.append(num1) catch return result;
-            result.append(num2) catch return result;
+            continue;
+        }
+        var len: u8 = 1;
+        var temp = item;
+        while (temp >= 10) : (temp = @divFloor(temp, 10)) {
+            len += 1;
+        }
+        if (len % 2 == 0) {
+            const divisor: i64 = std.math.pow(i64, 10, len / 2);
+            const num1 = @divFloor(item, divisor);
+            const num2 = @mod(item, divisor);
+            result.appendSlice(&[_]i64{ num1, num2 }) catch return result;
         } else {
             result.append(item * 2024) catch return result;
         }
     }
+
     return result;
 }
 
