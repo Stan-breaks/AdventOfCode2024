@@ -1,60 +1,89 @@
 const std = @import("std");
 
-fn blink(arr: []i64, allocator: std.mem.Allocator) std.ArrayList(i64) {
-    var result = std.ArrayList(i64).init(allocator);
+fn getDigitLength(num: i64) u8 {
+    if (num == 0) return 1;
 
-    for (arr) |item| {
-        const str = std.fmt.allocPrint(allocator, "{d}", .{item}) catch return result;
-        defer allocator.free(str);
-        if (item == 0) {
-            result.append(1) catch return result;
-            continue;
-        }
-        var len: u8 = 1;
-        var temp = item;
-        while (temp >= 10) : (temp = @divFloor(temp, 10)) {
-            len += 1;
-        }
-        if (len % 2 == 0) {
-            const divisor: i64 = std.math.pow(i64, 10, len / 2);
-            const num1 = @divFloor(item, divisor);
-            const num2 = @mod(item, divisor);
-            result.appendSlice(&[_]i64{ num1, num2 }) catch return result;
-        } else {
-            result.append(item * 2024) catch return result;
-        }
+    var n = if (num < 0) -num else num;
+    var len: u8 = 0;
+    while (n > 0) : (n = @divTrunc(n, 10)) {
+        len += 1;
     }
+    return len;
+}
 
-    return result;
+fn splitNumber(num: i64, len: u8) struct { i64, i64 } {
+    var pow: i64 = 1;
+    var l = len / 2;
+    while (l > 0) : (l -= 1) {
+        pow *= 10;
+    }
+    return .{ @divTrunc(num, pow), @mod(num, pow) };
 }
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    var stones = std.AutoHashMap(i64, i64).init(allocator);
+    defer stones.deinit();
 
     const file = try std.fs.cwd().openFile("test_input.txt", .{});
     defer file.close();
 
-    const content = try file.readToEndAlloc(allocator, 1024 * 1024);
-    defer allocator.free(content);
+    var buf: [64 * 1024]u8 = undefined;
+    const bytes_read = try file.readAll(&buf);
 
-    const stdout = std.io.getStdOut().writer();
-
-    var result = std.ArrayList(i64).init(allocator);
-    defer result.deinit();
-
-    var numberTokenizer = std.mem.tokenize(u8, content, "    ");
-    while (numberTokenizer.next()) |val| {
+    var it = std.mem.tokenizeScalar(u8, buf[0..bytes_read], ' ');
+    while (it.next()) |val| {
         const num = try std.fmt.parseInt(i64, std.mem.trim(u8, val, "\n"), 10);
-        try result.append(num);
+        const count = stones.get(num) orelse 0;
+        try stones.put(num, count + 1);
     }
 
-    for (0..75) |_| {
-        const newresult = blink(result.items, allocator);
-        result.deinit();
-        result = newresult;
+    for (0..25) |_| {
+        var new_stones = std.AutoHashMap(i64, i64).init(allocator);
+
+        var iterator = stones.iterator();
+        while (iterator.next()) |entry| {
+            const stone = entry.key_ptr.*;
+            const count = entry.value_ptr.*;
+
+            if (stone == 0) {
+                const existing = new_stones.get(1) orelse 0;
+                try new_stones.put(1, existing + count);
+                continue;
+            }
+
+            const len = getDigitLength(stone);
+            if (len % 2 == 0) {
+                const nums = splitNumber(if (stone < 0) -stone else stone, len);
+                const sign: i64 = if (stone < 0) -1 else 1;
+
+                const n1 = nums[0] * sign;
+                const n2 = nums[1] * sign;
+
+                const count1 = new_stones.get(n1) orelse 0;
+                const count2 = new_stones.get(n2) orelse 0;
+
+                try new_stones.put(n1, count1 + count);
+                try new_stones.put(n2, count2 + count);
+            } else {
+                const new_stone = stone * 2024;
+                const existing = new_stones.get(new_stone) orelse 0;
+                try new_stones.put(new_stone, existing + count);
+            }
+        }
+
+        stones.deinit();
+        stones = new_stones;
     }
 
-    try stdout.print("{d}", .{result.items.len});
+    var total: i64 = 0;
+    var iterator = stones.valueIterator();
+    while (iterator.next()) |count| {
+        total += count.*;
+    }
+
+    try std.io.getStdOut().writer().print("{d}\n", .{total});
 }
