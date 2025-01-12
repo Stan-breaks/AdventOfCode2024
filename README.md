@@ -30,6 +30,6 @@ I'll update this section as I progress through the challenge.
 | 8   |  :star:  |  :star:  |
 | 9   |  :star:  |  :star:  |
 | 10  |  :star:  |  :star:  |
-| 11  |  :star:  |          |
+| 11  |  :star:  |  :star:  |
 | ... |          |          |
 | 25  |          |          |
