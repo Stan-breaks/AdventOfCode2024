@@ -19,7 +19,7 @@ fn blink(numbers: *std.AutoHashMap(i64, i64), allocator: std.mem.Allocator) !std
                 try newNumbers.put(num2, val + (newNumbers.get(num2) orelse 0));
             } else {
                 const newKey = key * 2024;
-                try numbers.put(newKey, val + (newNumbers.get(newKey) orelse 0));
+                try newNumbers.put(newKey, val + (newNumbers.get(newKey) orelse 0));
             }
         }
     }
@@ -31,7 +31,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file = try std.fs.cwd().openFile("test_input.txt", .{});
+    const file = try std.fs.cwd().openFile("advent_input.txt", .{});
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
@@ -49,7 +49,7 @@ pub fn main() !void {
         const num = try std.fmt.parseInt(i64, std.mem.trim(u8, val, "\n"), 10);
         try numbers.put(num, 1 + (numbers.get(num) orelse 0));
     }
-    for (0..25) |_| {
+    for (0..75) |_| {
         const newNumbers = try blink(&numbers, allocator);
         numbers.deinit();
         numbers = newNumbers;
