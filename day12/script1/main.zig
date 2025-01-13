@@ -6,28 +6,37 @@ const Position = struct {
 };
 
 const direction = enum {
-     up,
+    up,
     right,
     down,
     left,
 };
 
 const State = struct {
-    i:usize,
-    j:usize,
-    direction:direction,
+    i: usize,
+    j: usize,
+    direction: direction,
 };
 
-fn move(currentState:State,map:[][]u8) Position {
-    const val = map[currentState.i][currentState.j];
+fn move(currentState: State, map: [][]u8, val: u8) State {
     var nexPos = getNextPosition(currentState);
-    if()
-    switch (currentState.direction) {
-        .up=>{},
-        .right=>{},
-        .down=>{},
-        .left=>{},
+    const newDirection = getNextDirection(currentState.direction);
+    if (map[nexPos.i][nexPos.j] == val) {
+        return State{ .i = nexPos.i, .j = nexPos.j, .direction = currentState.direction };
+    } else {
+        const newState = State{ .i = currentState.i, .j = currentState.j, .direction = newDirection };
+        nexPos = getNextPosition(newState);
+        return State{ .i = nexPos.i, .j = nexPos.j, .direction = newState.direction };
     }
+}
+
+fn getNextDirection(currentDirection: direction) direction {
+    return switch (currentDirection) {
+        .up => direction.right,
+        .right => direction.down,
+        .down => direction.left,
+        .left => direction.up,
+    };
 }
 
 fn getNextPosition(currentState: State) Position {
@@ -39,20 +48,20 @@ fn getNextPosition(currentState: State) Position {
     };
 }
 
-fn findValues(currentPosition:Position,map:[][]u8,visited:*std.AutoHashMap(Position, void)) !struct {pos:Position,end:usize}{
-    var newState = State{.i = currentPosition.i,.j = currentPosition.j,.direction = direction.right};
-    while(newState.i<map.len and newState.i>=0 and newState.j<map[newState.i].len and newState.j>=0){
-        const position = Position{.i = newState.i,.j = newState.j};
-        if(visited.contains(position)){
+fn findValues(currentPosition: Position, map: [][]u8, visited: *std.AutoHashMap(Position, void)) !struct { pos: Position, end: usize } {
+    const val = map[currentPosition.i][currentPosition.j];
+    var newState = State{ .i = currentPosition.i, .j = currentPosition.j, .direction = direction.right };
+    while (newState.i < map.len and newState.i >= 0 and newState.j < map[newState.i].len and newState.j >= 0) {
+        const position = Position{ .i = newState.i, .j = newState.j };
+        if (visited.contains(position)) {
             break;
-        }else{
+        } else {
             try visited.put(position, {});
         }
-        newState=move();
+        newState = move(newState, map, val);
     }
-return .{currentPosition,0};
+    return .{ currentPosition, 0 };
 }
-
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
